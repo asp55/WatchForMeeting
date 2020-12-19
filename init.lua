@@ -25,6 +25,8 @@ obj.logger = hs.logger.new('WatchForMeeting')
 
 obj.meetingState = false
 obj.zoom = nil
+obj.gotomeeting = nil
+obj.webex = nil
 
 -------------------------------------------
 --End of Declare Variables
@@ -332,22 +334,52 @@ end
 -------------------------------------------
 
 -------------------------------------------
--- Zoom Monitor
+-- Meeting Monitor
 -------------------------------------------
 
-local watchZoom = hs.timer.new(0.5, function()
+local function inZoom()
+   return (obj.zoom ~= nil and obj.zoom:getMenuItems()[2].AXTitle == "Meeting")
+end
+
+local function inGoToMeeting()
+   return (obj.gotomeeting ~= nil and obj.gotomeeting:getMenuItems()[2].AXChildren[1][4].AXTitle == "Leave Meeting")
+end
+
+local function inWebexMeeting()
+   return (obj.webex ~= nil)
+end
+
+local function inMeeting() 
+   return inZoom() or inGoToMeeting()
+end
+
+--declare startStopWatchMeeting before watchMeeting, define it after.
+local startStopWatchMeeting = function() end
+
+local watchMeeting = hs.timer.new(0.5, function()
    -- If the second menu isn't called "Meeting" then zoom is no longer in a meeting
-    if(obj.zoom:getMenuItems()[2].AXTitle ~= "Meeting") then
+    if(inMeeting() == false) then
       -- No longer in a meeting, stop watching the meeting
-      watchZoom:stop()
-      obj.meetingState = false
-      server:send(panelJSON())
+      startStopWatchMeeting()
       return
     else 
       --Watch for zoom menu items
-      local mic_open = obj.zoom:findMenuItem({"Meeting", "Unmute Audio"})==nil
-      local video_on = obj.zoom:findMenuItem({"Meeting", "Start Video"})==nil
-      local sharing = obj.zoom:findMenuItem({"Meeting", "Start Share"})==nil
+      local mic_open = false
+      local video_on = false
+      local sharing = false
+
+      if(inZoom()) then
+         mic_open = mic_open or obj.zoom:findMenuItem({"Meeting", "Unmute Audio"})==nil
+         video_on = video_on or obj.zoom:findMenuItem({"Meeting", "Start Video"})==nil
+         sharing = sharing or obj.zoom:findMenuItem({"Meeting", "Start Share"})==nil
+      end
+
+      if(inGoToMeeting()) then
+         mic_open = mic_open or obj.gotomeeting:findMenuItem({"Audio", "Unmute Me"})==nil
+         video_on = video_on or obj.gotomeeting:findMenuItem({"Webcams", "Share My Webcam"})==nil
+         sharing = sharing or false --TODO: find way to identify if screensharing in gotoMeeting
+      end
+
       if((obj.meetingState.mic_open ~= mic_open) or (obj.meetingState.video_on ~= video_on) or (obj.meetingState.sharing ~= sharing)) then
          obj.meetingState.mic_open = mic_open
          obj.meetingState.video_on = video_on
@@ -358,27 +390,28 @@ local watchZoom = hs.timer.new(0.5, function()
    end
 end)
 
-local function checkMeetingStatus(window, name, event)
-	obj.logger.d("\n\n\nCheck Meeting Status",window,name,event)
-	obj.zoom = hs.application.find("zoom.us")
 
-   local zoomCurrentlyInMeeting = (obj.zoom ~= nil and obj.zoom:getMenuItems()[2].AXTitle == "Meeting")
-
-   local currentlyInMeeting = zoomCurrentlyInMeeting
-
-   if(obj.meetingState == false and currentlyInMeeting == true) then
+startStopWatchMeeting = function()
+   if(obj.meetingState == false and inMeeting() == true) then
       obj.logger.d("\n\nStart Meeting")
          obj.meetingState = {}
-         if(zoomCurrentlyInMeeting) then
-            watchZoom:start()
-            watchZoom:fire()
-         end
-   elseif(obj.meetingState and currentlyInMeeting == false) then
+         watchMeeting:start()
+         watchMeeting:fire()
+   elseif(obj.meetingState and inMeeting() == false) then
       obj.logger.d("\n\nEnd Meeting")
-      watchZoom:stop()
+      watchMeeting:stop()
       obj.meetingState = false
       server:send(panelJSON())
    end
+end
+
+
+local function checkMeetingStatus(window, name, event)
+	obj.logger.d("\n\n\nCheck Meeting Status",window,name,event)
+   obj.zoom = hs.application.find("zoom.us")
+   obj.gotomeeting = hs.application.find("GoToMeeting")
+
+   startStopWatchMeeting()
 end
 
 -- Monitor zoom for running meeting
@@ -391,7 +424,7 @@ windowFilter:subscribe(hs.window.filter.windowTitleChanged,checkMeetingStatus)
 windowFilter:pause() 
 
 -------------------------------------------
--- End of Zoom Monitor
+-- End of Meeting Monitor
 -------------------------------------------
 
 function obj:start()
