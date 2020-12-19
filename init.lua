@@ -1,8 +1,6 @@
 --- === WatchForMeeting ===
 ---
---- A new Sample Spoon
----
---- Download: [https://github.com/Hammerspoon/Spoons/raw/master/Spoons/WatchForMeeting.spoon.zip](https://github.com/Hammerspoon/Spoons/raw/master/Spoons/WatchForMeeting.spoon.zip)
+--- A module that monitors whether or not you're in a meeting, and updates a self served webpage
 
 local obj={}
 obj.__index = obj
@@ -23,6 +21,7 @@ obj.logger = hs.logger.new('WatchMeeting')
 -- Declare Variables
 -------------------------------------------
 
+obj.port = 12345
 obj.meetingState = false
 obj.zoom = nil
 
@@ -36,9 +35,7 @@ obj.zoom = nil
 local server = hs.httpserver.new()
 
 local function panelJSON() 
-   local message = {}
-   message.type = "update"
-   message.inZoom = obj.meetingState
+   local message = {type="update", inZoom=obj.meetingState}
    return hs.json.encode(message)
 end
 
@@ -350,13 +347,11 @@ local watchMeeting = hs.timer.new(0.5, function()
       return
     else 
       --Watch for zoom menu items
-      local mic_open = obj.zoom:findMenuItem({"Meeting", "Unmute Audio"})==nil
-      local video_on = obj.zoom:findMenuItem({"Meeting", "Start Video"})==nil
-      local sharing = obj.zoom:findMenuItem({"Meeting", "Start Share"})==nil
-      if((obj.meetingState.mic_open ~= mic_open) or (obj.meetingState.video_on ~= video_on) or (obj.meetingState.sharing ~= sharing)) then
-         obj.meetingState.mic_open = mic_open
-         obj.meetingState.video_on = video_on
-         obj.meetingState.sharing = sharing
+      local _mic_open = obj.zoom:findMenuItem({"Meeting", "Unmute Audio"})==nil
+      local _video_on = obj.zoom:findMenuItem({"Meeting", "Start Video"})==nil
+      local _sharing = obj.zoom:findMenuItem({"Meeting", "Start Share"})==nil
+      if((obj.meetingState.mic_open ~= _mic_open) or (obj.meetingState.video_on ~= _video_on) or (obj.meetingState.sharing ~= _sharing)) then
+         obj.meetingState = {mic_open = _mic_open, video_on = _video_on, sharing = _sharing}
          obj.logger.d("In Meeting: ", (obj.meetingState and true)," Open Mic: ",obj.meetingState.mic_open," Video-ing:",obj.meetingState.video_on," Sharing",obj.meetingState.sharing)
          server:send(panelJSON())
       end
@@ -400,7 +395,7 @@ windowFilter:pause()
 
 function obj:start()
    server:websocket("/ws", websocketCallback)
-   server:setPort(12345)
+   server:setPort(self.port)
    server:setCallback(httpCallback)
    server:start()
    windowFilter:resume()
