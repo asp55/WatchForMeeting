@@ -17,7 +17,7 @@ obj.license = "MIT - https://opensource.org/licenses/MIT"
 --- WatchForMeeting.logger
 --- Variable
 --- Logger object used within the Spoon. Can be accessed to set the default log level for the messages coming from the Spoon.
-obj.logger = hs.logger.new('WatchForMeeting')
+obj.logger = hs.logger.new('WatchMeeting')
 
 -------------------------------------------
 -- Declare Variables
@@ -335,13 +335,18 @@ end
 -- Zoom Monitor
 -------------------------------------------
 
-local watchZoom = hs.timer.new(0.5, function()
+local function inMeeting()
+   return (obj.zoom ~= nil and obj.zoom:getMenuItems()[2].AXTitle == "Meeting")
+end
+
+--declare startStopWatchMeeting before watchMeeting, define it after.
+local startStopWatchMeeting = function() end
+
+local watchMeeting = hs.timer.new(0.5, function()
    -- If the second menu isn't called "Meeting" then zoom is no longer in a meeting
-    if(obj.zoom:getMenuItems()[2].AXTitle ~= "Meeting") then
+    if(inMeeting() == false) then
       -- No longer in a meeting, stop watching the meeting
-      watchZoom:stop()
-      obj.meetingState = false
-      server:send(panelJSON())
+      startStopWatchMeeting()
       return
     else 
       --Watch for zoom menu items
@@ -352,33 +357,32 @@ local watchZoom = hs.timer.new(0.5, function()
          obj.meetingState.mic_open = mic_open
          obj.meetingState.video_on = video_on
          obj.meetingState.sharing = sharing
-         obj.logger.d("\n\nIn Meeting: ", (obj.meetingState and true),"\nOpen Mic: ",obj.meetingState.mic_open,"\nVideo-ing:",obj.meetingState.video_on,"\nSharing",obj.meetingState.sharing)
+         obj.logger.d("In Meeting: ", (obj.meetingState and true)," Open Mic: ",obj.meetingState.mic_open," Video-ing:",obj.meetingState.video_on," Sharing",obj.meetingState.sharing)
          server:send(panelJSON())
       end
    end
 end)
 
-local function checkMeetingStatus(window, name, event)
-	obj.logger.d("\n\n\nCheck Meeting Status",window,name,event)
-	obj.zoom = hs.application.find("zoom.us")
-
-   local zoomCurrentlyInMeeting = (obj.zoom ~= nil and obj.zoom:getMenuItems()[2].AXTitle == "Meeting")
-
-   local currentlyInMeeting = zoomCurrentlyInMeeting
-
-   if(obj.meetingState == false and currentlyInMeeting == true) then
-      obj.logger.d("\n\nStart Meeting")
+startStopWatchMeeting = function()
+   if(obj.meetingState == false and inMeeting() == true) then
+      obj.logger.d("Start Meeting")
          obj.meetingState = {}
-         if(zoomCurrentlyInMeeting) then
-            watchZoom:start()
-            watchZoom:fire()
-         end
-   elseif(obj.meetingState and currentlyInMeeting == false) then
-      obj.logger.d("\n\nEnd Meeting")
-      watchZoom:stop()
+         watchMeeting:start()
+         watchMeeting:fire()
+   elseif(obj.meetingState and inMeeting() == false) then
+      obj.logger.d("End Meeting")
+      watchMeeting:stop()
       obj.meetingState = false
       server:send(panelJSON())
    end
+end
+
+local function checkMeetingStatus(window, name, event)
+	obj.logger.d("Check Meeting Status",window,name,event)
+   obj.zoom = hs.application.find("zoom.us")
+   
+   startStopWatchMeeting()
+
 end
 
 -- Monitor zoom for running meeting
