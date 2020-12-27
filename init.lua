@@ -69,7 +69,7 @@ end
 -- Zoom Monitor
 -------------------------------------------
 
-local function inMeeting()
+local function checkInMeeting()
    return (obj.zoom ~= nil and obj.zoom:getMenuItems()[2].AXTitle == "Meeting")
 end
 
@@ -78,7 +78,7 @@ local startStopWatchMeeting = function() end
 
 local watchMeeting = hs.timer.new(0.5, function()
    -- If the second menu isn't called "Meeting" then zoom is no longer in a meeting
-    if(inMeeting() == false) then
+    if(checkInMeeting() == false) then
       -- No longer in a meeting, stop watching the meeting
       startStopWatchMeeting()
       return
@@ -96,12 +96,12 @@ local watchMeeting = hs.timer.new(0.5, function()
 end)
 
 startStopWatchMeeting = function()
-   if(obj.meetingState == false and inMeeting() == true) then
+   if(obj.meetingState == false and checkInMeeting() == true) then
       obj.logger.d("Start Meeting")
          obj.meetingState = {}
          watchMeeting:start()
          watchMeeting:fire()
-   elseif(obj.meetingState and inMeeting() == false) then
+   elseif(obj.meetingState and checkInMeeting() == false) then
       obj.logger.d("End Meeting")
       watchMeeting:stop()
       obj.meetingState = false
@@ -111,7 +111,7 @@ end
 
 local function checkMeetingStatus(window, name, event)
 	obj.logger.d("Check Meeting Status",window,name,event)
-   obj.zoom = hs.application.find("zoom.us")
+   obj.zoom = window:application() --hs.application.find("zoom.us")
    
    startStopWatchMeeting()
 
@@ -119,12 +119,12 @@ end
 
 -- Monitor zoom for running meeting
 hs.application.enableSpotlightForNameSearches(true)
-local windowFilter = hs.window.filter.new('zoom.us',"WindowFilterLog",0)
-windowFilter:subscribe(hs.window.filter.hasWindow,checkMeetingStatus,true)
-windowFilter:subscribe(hs.window.filter.hasNoWindows,checkMeetingStatus)
-windowFilter:subscribe(hs.window.filter.windowDestroyed,checkMeetingStatus)
-windowFilter:subscribe(hs.window.filter.windowTitleChanged,checkMeetingStatus)
-windowFilter:pause() 
+local zoomWindowFilter = hs.window.filter.new(false,"ZoomWindowFilterLog",0):setAppFilter('zoom.us')
+zoomWindowFilter:subscribe(hs.window.filter.hasWindow,checkMeetingStatus,true)
+zoomWindowFilter:subscribe(hs.window.filter.hasNoWindows,checkMeetingStatus)
+zoomWindowFilter:subscribe(hs.window.filter.windowDestroyed,checkMeetingStatus)
+zoomWindowFilter:subscribe(hs.window.filter.windowTitleChanged,checkMeetingStatus)
+zoomWindowFilter:pause() 
 
 -------------------------------------------
 -- End of Zoom Monitor
@@ -135,13 +135,13 @@ function obj:start()
    server:setPort(self.port)
    server:setCallback(httpCallback)
    server:start()
-   windowFilter:resume()
+   zoomWindowFilter:resume()
    return self
 end
 
 function obj:stop()
    server:stop()
-   windowFilter:pause()
+   zoomWindowFilter:pause()
 end
 
 return obj
