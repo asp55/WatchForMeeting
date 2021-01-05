@@ -1,0 +1,20 @@
+{
+  "name": "meetingstatusserver",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./server.js",
+    "startdaemon": "npm install && ./node_modules/forever/bin/forever --minUptime 1000 --spinSleepTime 1000 start ./server.js",
+    "stopdaemon": "./node_modules/forever/bin/forever stop ./server.js",
+    "listdaemon": "./node_modules/forever/bin/forever list"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "forever": "^3.0.4",
+    "ws": "^7.4.1",
+    "yargs": "^16.2.0"
+  }
+}
