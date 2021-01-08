@@ -49,7 +49,7 @@ WatchForMeeting.zoom = nil
 local server = nil
 
 local function panelJSON() 
-   local message = {action="update", inZoom=WatchForMeeting.meetingState}
+   local message = {action="update", inMeeting=WatchForMeeting.meetingState}
    return hs.json.encode(message)
 end
 
@@ -154,7 +154,7 @@ local function localWebsocketCallback(type, message)
    if(type=="open") then
       _connectionAttempts = 0
 
-      local draft = {action="identify", key=WatchForMeeting.sharing.key, name=WatchForMeeting.room, type="room", status={inZoom=WatchForMeeting.meetingState}} 
+      local draft = {action="identify", key=WatchForMeeting.sharing.key, name=WatchForMeeting.room, type="room", status={inMeeting=WatchForMeeting.meetingState}} 
       server:send(hs.json.encode(draft))
    elseif(type == "closed" and WatchForMeeting.running) then
       if(_connectionError) then

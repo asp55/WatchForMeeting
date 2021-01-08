@@ -125,7 +125,7 @@
             console.log(e.data)
             var json = JSON.parse(e.data);
             if(json.action === "update") {
-                updatePanel(json.inZoom);
+                updatePanel(json.inMeeting);
             }
         }
 
@@ -172,8 +172,8 @@
         <path d="M122.5,10 L17.5,10 C13.3578644,10 10,13.3578644 10,17.5 L10,92.5 C10,96.6421356 13.3578644,100 17.5,100 L58.75,100 C59.4403559,100 60,100.559644 60,101.25 L60,114.67 C60.0040504,115.303688 59.5296506,115.838466 58.9,115.91 C52.6316729,116.586834 46.4791982,118.082928 40.6,120.36 C38.370177,121.255051 37.0922941,123.609615 37.5569273,125.967016 C38.0215604,128.324418 40.0973135,130.017996 42.5,130.000142 L97.5,130.000142 C99.8910652,130.000142 101.948293,128.309243 102.408783,125.962939 C102.869272,123.616634 101.604127,121.272683 99.39,120.37 C93.5077687,118.089653 87.3519962,116.590213 81.08,115.91 C80.4525944,115.834164 79.9804891,115.301972 79.98,114.67 L79.98,101.25 C79.98,100.559644 80.5396441,100 81.23,100 L122.5,100 C126.642136,100 130,96.6421356 130,92.5 L130,17.5 C130,13.3578644 126.642136,10 122.5,10 Z M120,77.5 C120,78.8807119 118.880712,80 117.5,80 L22.5,80 C21.1192881,80 20,78.8807119 20,77.5 L20,22.5 C20,21.1192881 21.1192881,20 22.5,20 L117.5,20 C118.880712,20 120,21.1192881 120,22.5 L120,77.5 Z" />
     </svg>`);
 
-        function updatePanel(inZoom) {
-        console.log(inZoom);
+        function updatePanel(inMeeting) {
+        console.log(inMeeting);
         var panel = document.getElementsByTagName("BODY")[0];
         var status = document.getElementById("status");
         
@@ -185,7 +185,7 @@
 
         panel.classList.remove("offline");
 
-        if(!inZoom) {
+        if(!inMeeting) {
                 panel.classList.remove("busy");
                 panel.classList.add("free");
                 statusSVG.getElementById("statusLabel").innerHTML = "FREE";
@@ -204,7 +204,7 @@
                 if(screenshareStatus.parentNode !== panel) panel.appendChild(screenshareStatus);
 
                 micStatus.innerHTML = "";
-                if(inZoom.mic_open) {
+                if(inMeeting.mic_open) {
                     micStatus.classList.remove("off");
                     micStatus.classList.add("on");
                     micStatus.appendChild(micUnmutedSVG);
@@ -216,7 +216,7 @@
                 }
 
                 vidStatus.innerHTML = "";
-                if(inZoom.video_on) {
+                if(inMeeting.video_on) {
                     vidStatus.classList.remove("off");
                     vidStatus.classList.add("on");
                     vidStatus.appendChild(vidOnSVG);
@@ -228,7 +228,7 @@
                 }
 
                 screenshareStatus.innerHTML = "";
-                if(inZoom.sharing) {
+                if(inMeeting.sharing) {
                     screenshareStatus.classList.remove("off");
                     screenshareStatus.classList.add("on");
                     screenshareStatus.appendChild(screenshareOnSVG);
