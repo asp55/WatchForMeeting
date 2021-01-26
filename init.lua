@@ -32,8 +32,8 @@ WatchForMeeting.sharing = {
 WatchForMeeting.running = false
 --Configuration Variables
 WatchForMeeting.room = hs.host.localizedName()
-WatchForMeeting.waitBeforeRetry = 0.5
-WatchForMeeting.maxConnectionAttempts = 3
+WatchForMeeting.waitBeforeRetry = 5
+WatchForMeeting.maxConnectionAttempts = -1 --when less than 0, infinite retrys
 
 WatchForMeeting.meetingState = false
 WatchForMeeting.zoom = nil
@@ -164,7 +164,12 @@ local function localWebsocketCallback(type, message)
          retryConnection()
       end
    elseif(type == "fail") then
-      WatchForMeeting.logger.d("Could not connect to websocket server. attempting to reconnect in "..WatchForMeeting.waitBeforeRetry.." seconds. (Attempt ".._connectionAttempts.."/"..WatchForMeeting.maxConnectionAttempts..")")
+      if(WatchForMeeting.maxConnectionAttempts > 0) then
+         WatchForMeeting.logger.d("Could not connect to websocket server. attempting to reconnect in "..WatchForMeeting.waitBeforeRetry.." seconds. (Attempt ".._connectionAttempts.."/"..WatchForMeeting.maxConnectionAttempts..")")
+      else
+         WatchForMeeting.logger.d("Could not connect to websocket server. attempting to reconnect in "..WatchForMeeting.waitBeforeRetry.." seconds. (Attempt ".._connectionAttempts..")")
+      end
+
       retryConnection()
    elseif(type == "received") then
       local parsed = hs.json.decode(message);
@@ -201,7 +206,7 @@ local function startConnection()
 end
 
 retryConnection = function()
-   if(_connectionAttempts >= WatchForMeeting.maxConnectionAttempts) then 
+   if(WatchForMeeting.maxConnectionAttempts > 0 and _connectionAttempts >= WatchForMeeting.maxConnectionAttempts) then 
       WatchForMeeting.logger.e("Maximum Connection Attempts failed")
       stopConnection()
    elseif(_connectionError) then
@@ -250,6 +255,17 @@ function WatchForMeeting:stop()
    stopConnection()
    zoomWindowFilter:pause()
    return self
+end
+
+function WatchForMeeting:restart()
+   self:stop()
+   return self:start()
+end
+
+function WatchForMeeting:fake()
+   local fakeMeetingState = {mic_open = true, video_on = true, sharing = false}
+   local message = {action="update", inMeeting=fakeMeetingState}
+   if(server) then server:send(hs.json.encode(message)) end
 end
 
 return WatchForMeeting
