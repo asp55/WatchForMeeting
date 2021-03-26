@@ -27,7 +27,7 @@ WatchForMeeting.logger = hs.logger.new('WatchMeeting')
 
 
 WatchForMeeting.sharing = {
-   selfHost=true,
+   useServer=false,
    port=12345
 }
 
@@ -226,9 +226,11 @@ end
 local function startConnection() 
    if(WatchForMeeting.sharing) then
       if(WatchForMeeting.sharing.useServer) then
+         WatchForMeeting.logger.d("Connecting to server at "..WatchForMeeting.sharing.url)
          _connectionAttempts = _connectionAttempts + 1
          server = hs.websocket.new(WatchForMeeting.sharing.url, localWebsocketCallback);
       else
+         WatchForMeeting.logger.d("Starting Self Hosted Server on port "..WatchForMeeting.sharing.port)
          server = hs.httpserver.new()
          server:websocket("/ws", websocketCallback)
          server:setPort(WatchForMeeting.sharing.port)
