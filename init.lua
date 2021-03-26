@@ -7,6 +7,8 @@
 local WatchForMeeting={}
 WatchForMeeting.__index = WatchForMeeting
 
+local faking = false;
+
 -- Metadata
 WatchForMeeting.name = "WatchForMeeting"
 WatchForMeeting.version = "0.1"
@@ -44,6 +46,29 @@ WatchForMeeting.zoom = nil
 
 
 -------------------------------------------
+-- Menu Bar
+-------------------------------------------
+
+local meetingMenuBar = hs.menubar.new(false)
+
+
+local function updateMenuIcon(status)
+
+   local iconPath = hs.spoons.scriptPath()..'menubar-icons/'
+
+   if(status) then 
+      meetingMenuBar:setIcon(iconPath.."Meeting.pdf",false)
+   else
+      meetingMenuBar:setIcon(iconPath.."Free.pdf",false)
+   end
+end
+
+-------------------------------------------
+-- End of Menu Bar
+-------------------------------------------
+
+
+-------------------------------------------
 -- Web Server
 -------------------------------------------
 local server = nil
@@ -75,19 +100,25 @@ end
 -------------------------------------------
 
 local function checkInMeeting()
-   return (WatchForMeeting.zoom ~= nil and WatchForMeeting.zoom:getMenuItems()[2].AXTitle == "Meeting")
+   local inMeetingState = (WatchForMeeting.zoom ~= nil and WatchForMeeting.zoom:getMenuItems()[2].AXTitle == "Meeting")
+   return inMeetingState
 end
 
 --declare startStopWatchMeeting before watchMeeting, define it after.
 local startStopWatchMeeting = function() end
 
 local watchMeeting = hs.timer.new(0.5, function()
+
    -- If the second menu isn't called "Meeting" then zoom is no longer in a meeting
     if(checkInMeeting() == false) then
+      updateMenuIcon(false)
       -- No longer in a meeting, stop watching the meeting
       startStopWatchMeeting()
+      
+      if(server) then server:send(panelJSON()) end
       return
     else 
+      updateMenuIcon(true)
       --Watch for zoom menu items
       local _mic_open = WatchForMeeting.zoom:findMenuItem({"Meeting", "Unmute Audio"})==nil
       local _video_on = WatchForMeeting.zoom:findMenuItem({"Meeting", "Start Video"})==nil
@@ -102,11 +133,13 @@ end)
 
 startStopWatchMeeting = function()
    if(WatchForMeeting.meetingState == false and checkInMeeting() == true) then
+      updateMenuIcon(true)
       WatchForMeeting.logger.d("Start Meeting")
          WatchForMeeting.meetingState = {}
          watchMeeting:start()
          watchMeeting:fire()
    elseif(WatchForMeeting.meetingState and checkInMeeting() == false) then
+      updateMenuIcon(false)
       WatchForMeeting.logger.d("End Meeting")
       watchMeeting:stop()
       WatchForMeeting.meetingState = false
@@ -236,13 +269,34 @@ local function validateShareSettings(settings)
 end
 
 
+function WatchForMeeting:auto()
+   meetingMenuBar:setMenu({
+      { title = "Meeting Status:", disabled = true },
+      { title = "Automatic", checked = true  },
+      { title = "Busy", checked = false, fn=function() WatchForMeeting:fake() end }
+   })
+   meetingMenuBar:returnToMenuBar()
+
+
+   --Check if a zoom meeting is already in progress
+   WatchForMeeting.zoom = hs.application.find("zoom.us")
+   watchMeeting:fire()
+   updateMenuIcon(checkInMeeting())
+   if(server) then server:send(panelJSON()) end
+
+   --turn on the zoom window monitor
+   zoomWindowFilter:resume()
+end
+
 function WatchForMeeting:start()
    if(not self.running) then
       self.running = true
       if(validateShareSettings(self.sharing)) then
          startConnection()
       end
-      zoomWindowFilter:resume()
+
+      self:auto()
+
    else
       hs.showError("")
       WatchForMeeting.logger.e("Cannot start, already running.")
@@ -253,6 +307,8 @@ end
 function WatchForMeeting:stop()
    self.running = false
    stopConnection()
+
+   meetingMenuBar:removeFromMenuBar()
    zoomWindowFilter:pause()
    return self
 end
@@ -263,9 +319,20 @@ function WatchForMeeting:restart()
 end
 
 function WatchForMeeting:fake()
-   local fakeMeetingState = {mic_open = true, video_on = true, sharing = false}
+   meetingMenuBar:setMenu({
+      { title = "Meeting Status:", disabled = true },
+      { title = "Automatic", checked = false, fn=function() WatchForMeeting:auto() end  },
+      { title = "Busy", checked = true }
+   })
+   meetingMenuBar:returnToMenuBar()
+   
+   zoomWindowFilter:pause()
+
+   local fakeMeetingState = {mic_open = true, video_on = true, sharing = true}
    local message = {action="update", inMeeting=fakeMeetingState}
    if(server) then server:send(hs.json.encode(message)) end
+   updateMenuIcon(fakeMeetingState)
+
 end
 
 return WatchForMeeting
