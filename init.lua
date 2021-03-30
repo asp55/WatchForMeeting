@@ -15,7 +15,7 @@ WatchForMeeting.__index = WatchForMeeting
 
 -- Metadata
 WatchForMeeting.name = "WatchForMeeting"
-WatchForMeeting.version = "0.1"
+WatchForMeeting.version = "1.0"
 WatchForMeeting.author = "Andrew Parnell <aparnell@gmail.com>"
 WatchForMeeting.homepage = "https://github.com/asp55/WatchForMeeting"
 WatchForMeeting.license = "MIT - https://opensource.org/licenses/MIT"
