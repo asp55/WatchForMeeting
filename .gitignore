@@ -44,3 +44,6 @@ node_modules/
 
 # Graphic Assets
 menubar-icons/icons.sketch
+
+# VS Code Workspace
+.vscode/

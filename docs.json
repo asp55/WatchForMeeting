@@ -11,14 +11,12 @@
     ],
     "Variable" : [
       {
-        "doc" : "Logger object used within the Spoon. Can be accessed to set the default log level for the messages coming from the Spoon.",
-        "desc" : "Logger object used within the Spoon. Can be accessed to set the default log level for the messages coming from the Spoon.",
-        "parameters" : [
-
-        ],
+        "def" : "WatchForMeeting.logger",
         "stripped_doc" : [
           "Logger object used within the Spoon. Can be accessed to set the default log level for the messages coming from the Spoon."
         ],
+        "name" : "logger",
+        "doc" : "Logger object used within the Spoon. Can be accessed to set the default log level for the messages coming from the Spoon.",
         "notes" : [
 
         ],
@@ -27,17 +25,15 @@
         "returns" : [
 
         ],
-        "def" : "WatchForMeeting.logger",
-        "name" : "logger"
-      },
-      {
-        "doc" : "Settings that control sharing.\n\n- enabled\n-- Whether or not sharing is enabled. True by default. When disabled, the spoon will still monitor meeting status, but you will need to write your own automations for what to do with that info. \n- useServer\n-- *true* - (recommended) an external server will store the meeting status and provide the web interface for monitoring meeting status. (Node.js sample server can be found at [https:\/\/github.com\/asp55\/MeetingStatusServer](https:\/\/github.com\/asp55\/MeetingStatusServer))\n-- *false* - hammerspoon will self serve the monitoring page. (Due to a limitation in hs.httpserver:websocket the monitoring page will only update in the last client to connect.) \n- port\n-- What port to run the self hosted server when WatchForMeeting.sharing.useServer is false. (Defaults to 8080)\n-- Ignored if WatchForMeeting.sharing.useServer is true.\n- serverURL\n-- The complete url for the external server. (including port)\n-- Required when WatchForMeeting.sharing.useServer is *true*\n- key\n-- UUID to identify the room. Value is provided when the room is added on the server side. \n-- Required when WatchForMeeting.sharing.useServer is *true*\n- maxConnectionAttempts\n-- Maximum number of connection attempts when using an external server.\n- waitBeforeRetry\n-- Time, in seconds, between connection attempts when using an external server",
-        "desc" : "Settings that control sharing.",
+        "desc" : "Logger object used within the Spoon. Can be accessed to set the default log level for the messages coming from the Spoon.",
         "parameters" : [
 
-        ],
+        ]
+      },
+      {
+        "def" : "WatchForMeeting.sharing",
         "stripped_doc" : [
-          "Settings that control sharing.",
+          "A Table containing the settings that control sharing.",
           "",
           "- enabled",
           "-- Whether or not sharing is enabled. True by default. When disabled, the spoon will still monitor meeting status, but you will need to write your own automations for what to do with that info. ",
@@ -58,6 +54,8 @@
           "- waitBeforeRetry",
           "-- Time, in seconds, between connection attempts when using an external server"
         ],
+        "name" : "sharing",
+        "doc" : "A Table containing the settings that control sharing.\n\n- enabled\n-- Whether or not sharing is enabled. True by default. When disabled, the spoon will still monitor meeting status, but you will need to write your own automations for what to do with that info. \n- useServer\n-- *true* - (recommended) an external server will store the meeting status and provide the web interface for monitoring meeting status. (Node.js sample server can be found at [https:\/\/github.com\/asp55\/MeetingStatusServer](https:\/\/github.com\/asp55\/MeetingStatusServer))\n-- *false* - hammerspoon will self serve the monitoring page. (Due to a limitation in hs.httpserver:websocket the monitoring page will only update in the last client to connect.) \n- port\n-- What port to run the self hosted server when WatchForMeeting.sharing.useServer is false. (Defaults to 8080)\n-- Ignored if WatchForMeeting.sharing.useServer is true.\n- serverURL\n-- The complete url for the external server. (including port)\n-- Required when WatchForMeeting.sharing.useServer is *true*\n- key\n-- UUID to identify the room. Value is provided when the room is added on the server side. \n-- Required when WatchForMeeting.sharing.useServer is *true*\n- maxConnectionAttempts\n-- Maximum number of connection attempts when using an external server.\n- waitBeforeRetry\n-- Time, in seconds, between connection attempts when using an external server",
         "notes" : [
 
         ],
@@ -66,18 +64,30 @@
         "returns" : [
 
         ],
-        "def" : "WatchForMeeting.sharing",
-        "name" : "sharing"
-      },
-      {
-        "doc" : "Boolean whether or not to show the menubar item",
-        "desc" : "Boolean whether or not to show the menubar item",
+        "desc" : "A Table containing the settings that control sharing.",
         "parameters" : [
 
-        ],
+        ]
+      },
+      {
+        "def" : "WatchForMeeting.menubar",
         "stripped_doc" : [
-          "Boolean whether or not to show the menubar item"
+          "Boolean whether or not to show the menubar item",
+          "A Table containing the settings that control sharing.",
+          "",
+          "- enabled",
+          "-- Whether or not to show the menu bar. True by default. ",
+          "- color",
+          "-- Whether or not to use color icons. True by default.",
+          "- detailed",
+          "-- Whether or not to use the detailed icon set. True by default.",
+          "-- *true* - Menu icon will spell out \"Free\" vs \"Meeting\" and will be sized accordingly",
+          "-- *false* - Menu icon will remain a fixed size",
+          "- showFullState",
+          "-- Whether the menubar icon should represent the full state (Mic On\/Off, Video On\/Off, Screen Sharing) or just whether or not you're currently in a meeting. True by default."
         ],
+        "name" : "menubar",
+        "doc" : "Boolean whether or not to show the menubar item\nA Table containing the settings that control sharing.\n\n- enabled\n-- Whether or not to show the menu bar. True by default. \n- color\n-- Whether or not to use color icons. True by default.\n- detailed\n-- Whether or not to use the detailed icon set. True by default.\n-- *true* - Menu icon will spell out \"Free\" vs \"Meeting\" and will be sized accordingly\n-- *false* - Menu icon will remain a fixed size\n- showFullState\n-- Whether the menubar icon should represent the full state (Mic On\/Off, Video On\/Off, Screen Sharing) or just whether or not you're currently in a meeting. True by default.",
         "notes" : [
 
         ],
@@ -86,15 +96,13 @@
         "returns" : [
 
         ],
-        "def" : "WatchForMeeting.menubar",
-        "name" : "menubar"
-      },
-      {
-        "doc" : "Number representing which mode WatchForMeeting should be running\n\n- *0* - Automatic (default)\n-- Monitors Zoom and updates status accordingly\n- *1* - Busy\n-- Fakes a meeting. (Marks as in meeting, and signals that the mic is live, camera is on, and screen is sharing.) Useful when meeting type is not supported (Currently any platform that isn't zoom.)",
-        "desc" : "Number representing which mode WatchForMeeting should be running",
+        "desc" : "Boolean whether or not to show the menubar item",
         "parameters" : [
 
-        ],
+        ]
+      },
+      {
+        "def" : "WatchForMeeting.mode",
         "stripped_doc" : [
           "Number representing which mode WatchForMeeting should be running",
           "",
@@ -103,6 +111,8 @@
           "- *1* - Busy",
           "-- Fakes a meeting. (Marks as in meeting, and signals that the mic is live, camera is on, and screen is sharing.) Useful when meeting type is not supported (Currently any platform that isn't zoom.)"
         ],
+        "name" : "mode",
+        "doc" : "Number representing which mode WatchForMeeting should be running\n\n- *0* - Automatic (default)\n-- Monitors Zoom and updates status accordingly\n- *1* - Busy\n-- Fakes a meeting. (Marks as in meeting, and signals that the mic is live, camera is on, and screen is sharing.) Useful when meeting type is not supported (Currently any platform that isn't zoom.)",
         "notes" : [
 
         ],
@@ -111,18 +121,18 @@
         "returns" : [
 
         ],
-        "def" : "WatchForMeeting.mode",
-        "name" : "mode"
-      },
-      {
-        "doc" : "(Read-only) The hs.application for zoom if it is running, otherwise nil",
-        "desc" : "(Read-only) The hs.application for zoom if it is running, otherwise nil",
+        "desc" : "Number representing which mode WatchForMeeting should be running",
         "parameters" : [
 
-        ],
+        ]
+      },
+      {
+        "def" : "WatchForMeeting.zoom",
         "stripped_doc" : [
           "(Read-only) The hs.application for zoom if it is running, otherwise nil"
         ],
+        "name" : "zoom",
+        "doc" : "(Read-only) The hs.application for zoom if it is running, otherwise nil",
         "notes" : [
 
         ],
@@ -131,15 +141,13 @@
         "returns" : [
 
         ],
-        "def" : "WatchForMeeting.zoom",
-        "name" : "zoom"
-      },
-      {
-        "doc" : "(Read-only) Either false (when not in a meeting) or a table (when in a meeting)\n\nWhen in a meeting, table will have the following keys with boolean values:\n- mic_open \n- video_on \n- sharing",
-        "desc" : "(Read-only) Either false (when not in a meeting) or a table (when in a meeting)",
+        "desc" : "(Read-only) The hs.application for zoom if it is running, otherwise nil",
         "parameters" : [
 
-        ],
+        ]
+      },
+      {
+        "def" : "WatchForMeeting.meetingState",
         "stripped_doc" : [
           "(Read-only) Either false (when not in a meeting) or a table (when in a meeting)",
           "",
@@ -148,6 +156,8 @@
           "- video_on ",
           "- sharing"
         ],
+        "name" : "meetingState",
+        "doc" : "(Read-only) Either false (when not in a meeting) or a table (when in a meeting)\n\nWhen in a meeting, table will have the following keys with boolean values:\n- mic_open \n- video_on \n- sharing",
         "notes" : [
 
         ],
@@ -156,34 +166,35 @@
         "returns" : [
 
         ],
-        "def" : "WatchForMeeting.meetingState",
-        "name" : "meetingState"
+        "desc" : "(Read-only) Either false (when not in a meeting) or a table (when in a meeting)",
+        "parameters" : [
+
+        ]
       }
     ],
     "stripped_doc" : [
 
     ],
-    "desc" : "A module that monitors whether or not you are in a meeting and optionally shares that information on a webpage you can run elsewhere.",
     "Deprecated" : [
 
     ],
+    "desc" : "A module that monitors whether or not you are in a meeting and optionally shares that information on a webpage you can run elsewhere.",
     "type" : "Module",
     "Constructor" : [
 
     ],
-    "doc" : "A module that monitors whether or not you are in a meeting and optionally shares that information on a webpage you can run elsewhere.",
+    "Field" : [
+
+    ],
     "Method" : [
       {
-        "doc" : "Starts a WatchForMeeting object\n\nParameters:\n- None\n\nReturns:\n- The WatchForMeeting object",
-        "desc" : "Starts a WatchForMeeting object",
-        "parameters" : [
-          "- None",
-          ""
-        ],
+        "def" : "WatchForMeeting:start()",
         "stripped_doc" : [
           "Starts a WatchForMeeting object",
           ""
         ],
+        "name" : "start",
+        "doc" : "Starts a WatchForMeeting object\n\nParameters:\n- None\n\nReturns:\n- The WatchForMeeting object",
         "notes" : [
 
         ],
@@ -192,20 +203,20 @@
         "returns" : [
           "- The WatchForMeeting object"
         ],
-        "def" : "WatchForMeeting:start()",
-        "name" : "start"
-      },
-      {
-        "doc" : "Stops a WatchForMeeting object\n\nParameters:\n- None\n\nReturns:\n- The WatchForMeeting object",
-        "desc" : "Stops a WatchForMeeting object",
+        "desc" : "Starts a WatchForMeeting object",
         "parameters" : [
           "- None",
           ""
-        ],
+        ]
+      },
+      {
+        "def" : "WatchForMeeting:stop()",
         "stripped_doc" : [
           "Stops a WatchForMeeting object",
           ""
         ],
+        "name" : "stop",
+        "doc" : "Stops a WatchForMeeting object\n\nParameters:\n- None\n\nReturns:\n- The WatchForMeeting object",
         "notes" : [
 
         ],
@@ -214,20 +225,20 @@
         "returns" : [
           "- The WatchForMeeting object"
         ],
-        "def" : "WatchForMeeting:stop()",
-        "name" : "stop"
-      },
-      {
-        "doc" : "Restarts a WatchForMeeting object\n\nParameters:\n- None\n\nReturns:\n- The WatchForMeeting object",
-        "desc" : "Restarts a WatchForMeeting object",
+        "desc" : "Stops a WatchForMeeting object",
         "parameters" : [
           "- None",
           ""
-        ],
+        ]
+      },
+      {
+        "def" : "WatchForMeeting:start()",
         "stripped_doc" : [
           "Restarts a WatchForMeeting object",
           ""
         ],
+        "name" : "start",
+        "doc" : "Restarts a WatchForMeeting object\n\nParameters:\n- None\n\nReturns:\n- The WatchForMeeting object",
         "notes" : [
 
         ],
@@ -236,20 +247,20 @@
         "returns" : [
           "- The WatchForMeeting object"
         ],
-        "def" : "WatchForMeeting:start()",
-        "name" : "start"
-      },
-      {
-        "doc" : "Monitors Zoom and updates status accordingly\n\nParameters:\n- None\n\nReturns:\n- The WatchForMeeting object",
-        "desc" : "Monitors Zoom and updates status accordingly",
+        "desc" : "Restarts a WatchForMeeting object",
         "parameters" : [
           "- None",
           ""
-        ],
+        ]
+      },
+      {
+        "def" : "WatchForMeeting:auto()",
         "stripped_doc" : [
           "Monitors Zoom and updates status accordingly",
           ""
         ],
+        "name" : "auto",
+        "doc" : "Monitors Zoom and updates status accordingly\n\nParameters:\n- None\n\nReturns:\n- The WatchForMeeting object",
         "notes" : [
 
         ],
@@ -258,21 +269,21 @@
         "returns" : [
           "- The WatchForMeeting object"
         ],
-        "def" : "WatchForMeeting:auto()",
-        "name" : "auto"
-      },
-      {
-        "doc" : "Disables monitoring and reports as being in a meeting. \nUseful when meeting type is not supported (currently any platform that isn't zoom.)\n\nParameters:\n- None\n\nReturns:\n- The WatchForMeeting object",
-        "desc" : "Disables monitoring and reports as being in a meeting.",
+        "desc" : "Monitors Zoom and updates status accordingly",
         "parameters" : [
           "- None",
           ""
-        ],
+        ]
+      },
+      {
+        "def" : "WatchForMeeting:fake()",
         "stripped_doc" : [
           "Disables monitoring and reports as being in a meeting. ",
           "Useful when meeting type is not supported (currently any platform that isn't zoom.)",
           ""
         ],
+        "name" : "fake",
+        "doc" : "Disables monitoring and reports as being in a meeting. \nUseful when meeting type is not supported (currently any platform that isn't zoom.)\n\nParameters:\n- None\n\nReturns:\n- The WatchForMeeting object",
         "notes" : [
 
         ],
@@ -281,23 +292,24 @@
         "returns" : [
           "- The WatchForMeeting object"
         ],
-        "def" : "WatchForMeeting:fake()",
-        "name" : "fake"
+        "desc" : "Disables monitoring and reports as being in a meeting.",
+        "parameters" : [
+          "- None",
+          ""
+        ]
       }
     ],
-    "Field" : [
+    "Command" : [
 
     ],
     "items" : [
       {
-        "doc" : "Logger object used within the Spoon. Can be accessed to set the default log level for the messages coming from the Spoon.",
-        "desc" : "Logger object used within the Spoon. Can be accessed to set the default log level for the messages coming from the Spoon.",
-        "parameters" : [
-
-        ],
+        "def" : "WatchForMeeting.logger",
         "stripped_doc" : [
           "Logger object used within the Spoon. Can be accessed to set the default log level for the messages coming from the Spoon."
         ],
+        "name" : "logger",
+        "doc" : "Logger object used within the Spoon. Can be accessed to set the default log level for the messages coming from the Spoon.",
         "notes" : [
 
         ],
@@ -306,15 +318,13 @@
         "returns" : [
 
         ],
-        "def" : "WatchForMeeting.logger",
-        "name" : "logger"
-      },
-      {
-        "doc" : "(Read-only) Either false (when not in a meeting) or a table (when in a meeting)\n\nWhen in a meeting, table will have the following keys with boolean values:\n- mic_open \n- video_on \n- sharing",
-        "desc" : "(Read-only) Either false (when not in a meeting) or a table (when in a meeting)",
+        "desc" : "Logger object used within the Spoon. Can be accessed to set the default log level for the messages coming from the Spoon.",
         "parameters" : [
 
-        ],
+        ]
+      },
+      {
+        "def" : "WatchForMeeting.meetingState",
         "stripped_doc" : [
           "(Read-only) Either false (when not in a meeting) or a table (when in a meeting)",
           "",
@@ -323,6 +333,8 @@
           "- video_on ",
           "- sharing"
         ],
+        "name" : "meetingState",
+        "doc" : "(Read-only) Either false (when not in a meeting) or a table (when in a meeting)\n\nWhen in a meeting, table will have the following keys with boolean values:\n- mic_open \n- video_on \n- sharing",
         "notes" : [
 
         ],
@@ -331,18 +343,30 @@
         "returns" : [
 
         ],
-        "def" : "WatchForMeeting.meetingState",
-        "name" : "meetingState"
-      },
-      {
-        "doc" : "Boolean whether or not to show the menubar item",
-        "desc" : "Boolean whether or not to show the menubar item",
+        "desc" : "(Read-only) Either false (when not in a meeting) or a table (when in a meeting)",
         "parameters" : [
 
-        ],
+        ]
+      },
+      {
+        "def" : "WatchForMeeting.menubar",
         "stripped_doc" : [
-          "Boolean whether or not to show the menubar item"
+          "Boolean whether or not to show the menubar item",
+          "A Table containing the settings that control sharing.",
+          "",
+          "- enabled",
+          "-- Whether or not to show the menu bar. True by default. ",
+          "- color",
+          "-- Whether or not to use color icons. True by default.",
+          "- detailed",
+          "-- Whether or not to use the detailed icon set. True by default.",
+          "-- *true* - Menu icon will spell out \"Free\" vs \"Meeting\" and will be sized accordingly",
+          "-- *false* - Menu icon will remain a fixed size",
+          "- showFullState",
+          "-- Whether the menubar icon should represent the full state (Mic On\/Off, Video On\/Off, Screen Sharing) or just whether or not you're currently in a meeting. True by default."
         ],
+        "name" : "menubar",
+        "doc" : "Boolean whether or not to show the menubar item\nA Table containing the settings that control sharing.\n\n- enabled\n-- Whether or not to show the menu bar. True by default. \n- color\n-- Whether or not to use color icons. True by default.\n- detailed\n-- Whether or not to use the detailed icon set. True by default.\n-- *true* - Menu icon will spell out \"Free\" vs \"Meeting\" and will be sized accordingly\n-- *false* - Menu icon will remain a fixed size\n- showFullState\n-- Whether the menubar icon should represent the full state (Mic On\/Off, Video On\/Off, Screen Sharing) or just whether or not you're currently in a meeting. True by default.",
         "notes" : [
 
         ],
@@ -351,15 +375,13 @@
         "returns" : [
 
         ],
-        "def" : "WatchForMeeting.menubar",
-        "name" : "menubar"
-      },
-      {
-        "doc" : "Number representing which mode WatchForMeeting should be running\n\n- *0* - Automatic (default)\n-- Monitors Zoom and updates status accordingly\n- *1* - Busy\n-- Fakes a meeting. (Marks as in meeting, and signals that the mic is live, camera is on, and screen is sharing.) Useful when meeting type is not supported (Currently any platform that isn't zoom.)",
-        "desc" : "Number representing which mode WatchForMeeting should be running",
+        "desc" : "Boolean whether or not to show the menubar item",
         "parameters" : [
 
-        ],
+        ]
+      },
+      {
+        "def" : "WatchForMeeting.mode",
         "stripped_doc" : [
           "Number representing which mode WatchForMeeting should be running",
           "",
@@ -368,6 +390,8 @@
           "- *1* - Busy",
           "-- Fakes a meeting. (Marks as in meeting, and signals that the mic is live, camera is on, and screen is sharing.) Useful when meeting type is not supported (Currently any platform that isn't zoom.)"
         ],
+        "name" : "mode",
+        "doc" : "Number representing which mode WatchForMeeting should be running\n\n- *0* - Automatic (default)\n-- Monitors Zoom and updates status accordingly\n- *1* - Busy\n-- Fakes a meeting. (Marks as in meeting, and signals that the mic is live, camera is on, and screen is sharing.) Useful when meeting type is not supported (Currently any platform that isn't zoom.)",
         "notes" : [
 
         ],
@@ -376,17 +400,15 @@
         "returns" : [
 
         ],
-        "def" : "WatchForMeeting.mode",
-        "name" : "mode"
-      },
-      {
-        "doc" : "Settings that control sharing.\n\n- enabled\n-- Whether or not sharing is enabled. True by default. When disabled, the spoon will still monitor meeting status, but you will need to write your own automations for what to do with that info. \n- useServer\n-- *true* - (recommended) an external server will store the meeting status and provide the web interface for monitoring meeting status. (Node.js sample server can be found at [https:\/\/github.com\/asp55\/MeetingStatusServer](https:\/\/github.com\/asp55\/MeetingStatusServer))\n-- *false* - hammerspoon will self serve the monitoring page. (Due to a limitation in hs.httpserver:websocket the monitoring page will only update in the last client to connect.) \n- port\n-- What port to run the self hosted server when WatchForMeeting.sharing.useServer is false. (Defaults to 8080)\n-- Ignored if WatchForMeeting.sharing.useServer is true.\n- serverURL\n-- The complete url for the external server. (including port)\n-- Required when WatchForMeeting.sharing.useServer is *true*\n- key\n-- UUID to identify the room. Value is provided when the room is added on the server side. \n-- Required when WatchForMeeting.sharing.useServer is *true*\n- maxConnectionAttempts\n-- Maximum number of connection attempts when using an external server.\n- waitBeforeRetry\n-- Time, in seconds, between connection attempts when using an external server",
-        "desc" : "Settings that control sharing.",
+        "desc" : "Number representing which mode WatchForMeeting should be running",
         "parameters" : [
 
-        ],
+        ]
+      },
+      {
+        "def" : "WatchForMeeting.sharing",
         "stripped_doc" : [
-          "Settings that control sharing.",
+          "A Table containing the settings that control sharing.",
           "",
           "- enabled",
           "-- Whether or not sharing is enabled. True by default. When disabled, the spoon will still monitor meeting status, but you will need to write your own automations for what to do with that info. ",
@@ -407,6 +429,8 @@
           "- waitBeforeRetry",
           "-- Time, in seconds, between connection attempts when using an external server"
         ],
+        "name" : "sharing",
+        "doc" : "A Table containing the settings that control sharing.\n\n- enabled\n-- Whether or not sharing is enabled. True by default. When disabled, the spoon will still monitor meeting status, but you will need to write your own automations for what to do with that info. \n- useServer\n-- *true* - (recommended) an external server will store the meeting status and provide the web interface for monitoring meeting status. (Node.js sample server can be found at [https:\/\/github.com\/asp55\/MeetingStatusServer](https:\/\/github.com\/asp55\/MeetingStatusServer))\n-- *false* - hammerspoon will self serve the monitoring page. (Due to a limitation in hs.httpserver:websocket the monitoring page will only update in the last client to connect.) \n- port\n-- What port to run the self hosted server when WatchForMeeting.sharing.useServer is false. (Defaults to 8080)\n-- Ignored if WatchForMeeting.sharing.useServer is true.\n- serverURL\n-- The complete url for the external server. (including port)\n-- Required when WatchForMeeting.sharing.useServer is *true*\n- key\n-- UUID to identify the room. Value is provided when the room is added on the server side. \n-- Required when WatchForMeeting.sharing.useServer is *true*\n- maxConnectionAttempts\n-- Maximum number of connection attempts when using an external server.\n- waitBeforeRetry\n-- Time, in seconds, between connection attempts when using an external server",
         "notes" : [
 
         ],
@@ -415,18 +439,18 @@
         "returns" : [
 
         ],
-        "def" : "WatchForMeeting.sharing",
-        "name" : "sharing"
-      },
-      {
-        "doc" : "(Read-only) The hs.application for zoom if it is running, otherwise nil",
-        "desc" : "(Read-only) The hs.application for zoom if it is running, otherwise nil",
+        "desc" : "A Table containing the settings that control sharing.",
         "parameters" : [
 
-        ],
+        ]
+      },
+      {
+        "def" : "WatchForMeeting.zoom",
         "stripped_doc" : [
           "(Read-only) The hs.application for zoom if it is running, otherwise nil"
         ],
+        "name" : "zoom",
+        "doc" : "(Read-only) The hs.application for zoom if it is running, otherwise nil",
         "notes" : [
 
         ],
@@ -435,20 +459,19 @@
         "returns" : [
 
         ],
-        "def" : "WatchForMeeting.zoom",
-        "name" : "zoom"
+        "desc" : "(Read-only) The hs.application for zoom if it is running, otherwise nil",
+        "parameters" : [
+
+        ]
       },
       {
-        "doc" : "Monitors Zoom and updates status accordingly\n\nParameters:\n- None\n\nReturns:\n- The WatchForMeeting object",
-        "desc" : "Monitors Zoom and updates status accordingly",
-        "parameters" : [
-          "- None",
-          ""
-        ],
+        "def" : "WatchForMeeting:auto()",
         "stripped_doc" : [
           "Monitors Zoom and updates status accordingly",
           ""
         ],
+        "name" : "auto",
+        "doc" : "Monitors Zoom and updates status accordingly\n\nParameters:\n- None\n\nReturns:\n- The WatchForMeeting object",
         "notes" : [
 
         ],
@@ -457,21 +480,21 @@
         "returns" : [
           "- The WatchForMeeting object"
         ],
-        "def" : "WatchForMeeting:auto()",
-        "name" : "auto"
-      },
-      {
-        "doc" : "Disables monitoring and reports as being in a meeting. \nUseful when meeting type is not supported (currently any platform that isn't zoom.)\n\nParameters:\n- None\n\nReturns:\n- The WatchForMeeting object",
-        "desc" : "Disables monitoring and reports as being in a meeting.",
+        "desc" : "Monitors Zoom and updates status accordingly",
         "parameters" : [
           "- None",
           ""
-        ],
+        ]
+      },
+      {
+        "def" : "WatchForMeeting:fake()",
         "stripped_doc" : [
           "Disables monitoring and reports as being in a meeting. ",
           "Useful when meeting type is not supported (currently any platform that isn't zoom.)",
           ""
         ],
+        "name" : "fake",
+        "doc" : "Disables monitoring and reports as being in a meeting. \nUseful when meeting type is not supported (currently any platform that isn't zoom.)\n\nParameters:\n- None\n\nReturns:\n- The WatchForMeeting object",
         "notes" : [
 
         ],
@@ -480,20 +503,20 @@
         "returns" : [
           "- The WatchForMeeting object"
         ],
-        "def" : "WatchForMeeting:fake()",
-        "name" : "fake"
-      },
-      {
-        "doc" : "Restarts a WatchForMeeting object\n\nParameters:\n- None\n\nReturns:\n- The WatchForMeeting object",
-        "desc" : "Restarts a WatchForMeeting object",
+        "desc" : "Disables monitoring and reports as being in a meeting.",
         "parameters" : [
           "- None",
           ""
-        ],
+        ]
+      },
+      {
+        "def" : "WatchForMeeting:start()",
         "stripped_doc" : [
           "Restarts a WatchForMeeting object",
           ""
         ],
+        "name" : "start",
+        "doc" : "Restarts a WatchForMeeting object\n\nParameters:\n- None\n\nReturns:\n- The WatchForMeeting object",
         "notes" : [
 
         ],
@@ -502,20 +525,20 @@
         "returns" : [
           "- The WatchForMeeting object"
         ],
-        "def" : "WatchForMeeting:start()",
-        "name" : "start"
-      },
-      {
-        "doc" : "Starts a WatchForMeeting object\n\nParameters:\n- None\n\nReturns:\n- The WatchForMeeting object",
-        "desc" : "Starts a WatchForMeeting object",
+        "desc" : "Restarts a WatchForMeeting object",
         "parameters" : [
           "- None",
           ""
-        ],
+        ]
+      },
+      {
+        "def" : "WatchForMeeting:start()",
         "stripped_doc" : [
           "Starts a WatchForMeeting object",
           ""
         ],
+        "name" : "start",
+        "doc" : "Starts a WatchForMeeting object\n\nParameters:\n- None\n\nReturns:\n- The WatchForMeeting object",
         "notes" : [
 
         ],
@@ -524,20 +547,20 @@
         "returns" : [
           "- The WatchForMeeting object"
         ],
-        "def" : "WatchForMeeting:start()",
-        "name" : "start"
-      },
-      {
-        "doc" : "Stops a WatchForMeeting object\n\nParameters:\n- None\n\nReturns:\n- The WatchForMeeting object",
-        "desc" : "Stops a WatchForMeeting object",
+        "desc" : "Starts a WatchForMeeting object",
         "parameters" : [
           "- None",
           ""
-        ],
+        ]
+      },
+      {
+        "def" : "WatchForMeeting:stop()",
         "stripped_doc" : [
           "Stops a WatchForMeeting object",
           ""
         ],
+        "name" : "stop",
+        "doc" : "Stops a WatchForMeeting object\n\nParameters:\n- None\n\nReturns:\n- The WatchForMeeting object",
         "notes" : [
 
         ],
@@ -546,13 +569,14 @@
         "returns" : [
           "- The WatchForMeeting object"
         ],
-        "def" : "WatchForMeeting:stop()",
-        "name" : "stop"
+        "desc" : "Stops a WatchForMeeting object",
+        "parameters" : [
+          "- None",
+          ""
+        ]
       }
     ],
-    "Command" : [
-
-    ],
+    "doc" : "A module that monitors whether or not you are in a meeting and optionally shares that information on a webpage you can run elsewhere.",
     "name" : "WatchForMeeting"
   }
 ]
