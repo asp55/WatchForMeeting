@@ -41,3 +41,6 @@ luac.out
 
 # Node Modules
 node_modules/
+
+# Graphic Assets
+menubar-icons/icons.sketch

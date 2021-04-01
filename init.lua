@@ -32,37 +32,6 @@ WatchForMeeting.license = "MIT - https://opensource.org/licenses/MIT"
 --- Logger object used within the Spoon. Can be accessed to set the default log level for the messages coming from the Spoon.
 WatchForMeeting.logger = hs.logger.new('WatchMeeting')
 
---- WatchForMeeting.sharing
---- Variable
---- Settings that control sharing.
----
---- - enabled
---- -- Whether or not sharing is enabled. True by default. When disabled, the spoon will still monitor meeting status, but you will need to write your own automations for what to do with that info. 
---- - useServer
---- -- *true* - (recommended) an external server will store the meeting status and provide the web interface for monitoring meeting status. (Node.js sample server can be found at [https://github.com/asp55/MeetingStatusServer](https://github.com/asp55/MeetingStatusServer))
---- -- *false* - hammerspoon will self serve the monitoring page. (Due to a limitation in hs.httpserver:websocket the monitoring page will only update in the last client to connect.) 
---- - port
---- -- What port to run the self hosted server when WatchForMeeting.sharing.useServer is false. (Defaults to 8080)
---- -- Ignored if WatchForMeeting.sharing.useServer is true.
---- - serverURL
---- -- The complete url for the external server. (including port)
---- -- Required when WatchForMeeting.sharing.useServer is *true*
---- - key
---- -- UUID to identify the room. Value is provided when the room is added on the server side. 
---- -- Required when WatchForMeeting.sharing.useServer is *true*
---- - maxConnectionAttempts
---- -- Maximum number of connection attempts when using an external server.
---- - waitBeforeRetry
---- -- Time, in seconds, between connection attempts when using an external server
-
-WatchForMeeting.sharing = {}
-WatchForMeeting.sharing.enabled = true
-WatchForMeeting.sharing.useServer = false
-WatchForMeeting.sharing.port = 8080
-WatchForMeeting.sharing.serverURL = nil
-WatchForMeeting.sharing.key = nil
-WatchForMeeting.sharing.maxConnectionAttempts = -1 --when less than 0, infinite retrys
-WatchForMeeting.sharing.waitBeforeRetry = 5
 
 
 
@@ -73,10 +42,78 @@ _internal.running = false
    -- Special Variables (stored in _internal and accessed through metamethods defined below)
    -------------------------------------------
 
+   --- WatchForMeeting.sharing
+   --- Variable
+   --- A Table containing the settings that control sharing.
+   ---
+   --- - enabled
+   --- -- Whether or not sharing is enabled. True by default. When disabled, the spoon will still monitor meeting status, but you will need to write your own automations for what to do with that info. 
+   --- - useServer
+   --- -- *true* - (recommended) an external server will store the meeting status and provide the web interface for monitoring meeting status. (Node.js sample server can be found at [https://github.com/asp55/MeetingStatusServer](https://github.com/asp55/MeetingStatusServer))
+   --- -- *false* - hammerspoon will self serve the monitoring page. (Due to a limitation in hs.httpserver:websocket the monitoring page will only update in the last client to connect.) 
+   --- - port
+   --- -- What port to run the self hosted server when WatchForMeeting.sharing.useServer is false. (Defaults to 8080)
+   --- -- Ignored if WatchForMeeting.sharing.useServer is true.
+   --- - serverURL
+   --- -- The complete url for the external server. (including port)
+   --- -- Required when WatchForMeeting.sharing.useServer is *true*
+   --- - key
+   --- -- UUID to identify the room. Value is provided when the room is added on the server side. 
+   --- -- Required when WatchForMeeting.sharing.useServer is *true*
+   --- - maxConnectionAttempts
+   --- -- Maximum number of connection attempts when using an external server.
+   --- - waitBeforeRetry
+   --- -- Time, in seconds, between connection attempts when using an external server
+
+   _internal.sharingDefaults = {
+      enabled = true, 
+      useServer = false, 
+      port = 8080, 
+      serverURL = nil, 
+      key = nil, 
+      maxConnectionAttempts = -1,  --when less than 0, infinite retrys
+      waitBeforeRetry = 5, 
+   }
+   _internal.sharing = setmetatable({}, {__index=_internal.sharingDefaults})
+
+
    --- WatchForMeeting.menubar
    --- Variable
    --- Boolean whether or not to show the menubar item
-   _internal.menubar = true
+   --- A Table containing the settings that control sharing.
+   ---
+   --- - enabled
+   --- -- Whether or not to show the menu bar. True by default. 
+   --- - color
+   --- -- Whether or not to use color icons. True by default.
+   --- - detailed
+   --- -- Whether or not to use the detailed icon set. True by default.
+   --- -- *true* - Menu icon will spell out "Free" vs "Meeting" and will be sized accordingly
+   --- -- *false* - Menu icon will remain a fixed size
+   --- - showFullState
+   --- -- Whether the menubar icon should represent the full state (Mic On/Off, Video On/Off, Screen Sharing) or just whether or not you're currently in a meeting. True by default.
+
+
+   _internal.menubarDefaults = {
+      enabled = true, 
+      color = true, 
+      detailed = true,
+      showFullState = true
+   }
+   _internal.menubar__newIndex = function (table, key, value)
+      if(key=="enabled") then
+         if(value) then
+            _internal.meetingMenuBar:returnToMenuBar()
+            _internal.updateMenuIcon(_internal.meetingState, _internal.faking)
+         else
+            _internal.meetingMenuBar:removeFromMenuBar()
+         end
+      else
+         _internal.updateMenuIcon(_internal.meetingState, _internal.faking)
+      end
+   end
+
+   _internal.menubar = setmetatable({}, {__index=_internal.menubarDefaults, __newindex=_internal.menubar__newIndex})
 
    --- WatchForMeeting.mode
    --- Variable
@@ -103,10 +140,12 @@ _internal.running = false
    --- - sharing 
    _internal.meetingState = false
 
+
+
    -- MetaMethods
    WatchForMeeting = setmetatable(WatchForMeeting, {
       __index = function (table, key)
-         if(key=="zoom" or key=="meetingState" or key=="menubar" or key=="mode") then
+         if(key=="zoom" or key=="meetingState" or key=="menubar" or key=="mode" or key=="sharing") then
             return _internal[key]
          else
             return rawget( table, key )
@@ -116,19 +155,22 @@ _internal.running = false
          if(key=="zoom" or key=="meetingState") then
             --skip writing zoom or meeting state to watchformeeting
          elseif(key=="menubar") then
-            if(value) then 
+            _internal.menubar = setmetatable(value, {__index=_internal.menubarDefaults, __newindex=_internal.menubar__newIndex})
+            if(_internal.menubar.enabled) then 
                _internal.meetingMenuBar:returnToMenuBar()
-               _internal.updateMenuIcon(_internal.faking or _internal.meetingState)
+               _internal.updateMenuIcon(_internal.meetingState, _internal.faking)
             else
                _internal.meetingMenuBar:removeFromMenuBar()
             end
-            _internal[key] = value
          elseif(key=="mode") then
             if(value == 1) then 
                table:fake()
             else 
                table:auto() 
             end
+         elseif(key=="sharing") then
+
+            _internal.sharing = setmetatable(value, {__index=_internal.sharingDefaults})
          else
             return rawset(table, key, value)
          end
@@ -146,15 +188,37 @@ _internal.running = false
 _internal.meetingMenuBar = hs.menubar.new(false)
 
 
-function _internal.updateMenuIcon(status)
+function _internal.updateMenuIcon(status, faking)
 
    local iconPath = hs.spoons.scriptPath()..'menubar-icons/'
 
-   if(status) then 
-      _internal.meetingMenuBar:setIcon(iconPath.."Meeting.pdf",false)
+   if(_internal.menubar.color) then
+      iconPath = iconPath..'Color/'
    else
-      _internal.meetingMenuBar:setIcon(iconPath.."Free.pdf",false)
+      iconPath = iconPath..'Template/'
    end
+
+   if(_internal.menubar.detailed) then
+      iconPath = iconPath..'Detailed/'
+   else
+      iconPath = iconPath..'Minimal/'
+   end
+   
+   local iconFile = ""
+   if(status) then 
+      iconFile = "Meeting"
+      if(_internal.menubar.showFullState and (status.mic_open or status.video_on or status.sharing)) then
+         if(status.mic_open) then iconFile = iconFile.."-Mic" end
+         if(status.video_on) then iconFile = iconFile.."-Vid" end
+         if(status.sharing) then iconFile = iconFile.."-Screen" end
+      end
+      if(faking) then iconFile = iconFile.."-Faking" end
+      iconFile = iconFile..".pdf"
+   else
+      iconFile = "Free.pdf"
+   end
+
+   _internal.meetingMenuBar:setIcon(iconPath..iconFile,not _internal.menubar.color)
 end
 
 -------------------------------------------
@@ -213,7 +277,7 @@ local watchMeeting = hs.timer.new(0.5, function()
       if(_internal.server and _internal.websocketStatus == "open") then _internal.server:send(composeJsonUpdate(_internal.meetingState)) end
       return
     else 
-      _internal.updateMenuIcon(true)
+      _internal.updateMenuIcon(_internal.meetingState, _internal.faking)
       --Watch for zoom menu items
       local _mic_open = _internal.zoom:findMenuItem({"Meeting", "Unmute Audio"})==nil
       local _video_on = _internal.zoom:findMenuItem({"Meeting", "Start Video"})==nil
@@ -228,7 +292,7 @@ end)
 
 startStopWatchMeeting = function()
    if(_internal.meetingState == false and currentlyInMeeting() == true) then
-      _internal.updateMenuIcon(true)
+      _internal.updateMenuIcon(_internal.meetingState, _internal.faking)
       WatchForMeeting.logger.d("Start Meeting")
          _internal.meetingState = {}
          watchMeeting:start()
@@ -389,7 +453,7 @@ function WatchForMeeting:start()
          startConnection()
       end
  
-      if(self.menubar) then
+      if(self.menubar.enabled) then
          _internal.meetingMenuBar:returnToMenuBar()
       end
  
@@ -482,22 +546,39 @@ end
 ---
 --- Returns:
 --- - The WatchForMeeting object
-function WatchForMeeting:fake()
+function WatchForMeeting:fake(_mic_open, _video_on, _sharing)
    _internal.mode = 1
-
+ 
    if(_internal.running) then
       _internal.faking = true
+      _internal.meetingState = {mic_open = _mic_open, video_on = _video_on, sharing = _sharing}
 
-      _internal.meetingMenuBar:setMenu({
+      local meetingMenu = {
          { title = "Meeting Status:", disabled = true },
          { title = "Automatic", checked = false, fn=function() WatchForMeeting:auto() end  },
-         { title = "Busy", checked = true }
-      })
+         { title = "Busy", checked = true },
+         { title = "-"}
+      }
+      if(not (_mic_open and _video_on and _sharing)) then
+         table.insert(meetingMenu, { title = "Select All", fn=function() WatchForMeeting:fake(true, true, true) end })
+      else
+         table.insert(meetingMenu, { title = "Select None", fn=function() WatchForMeeting:fake(false, false, false) end })
+      end
+
+      table.insert(meetingMenu, { title = "Mic On", indent=1, checked = _internal.meetingState.mic_open, fn=function() WatchForMeeting:fake(not _mic_open, _video_on, _sharing) end})
+      table.insert(meetingMenu, { title = "Video On", indent=1, checked = _internal.meetingState.video_on, fn=function() WatchForMeeting:fake(_mic_open, not _video_on, _sharing) end })
+      table.insert(meetingMenu, { title = "Sharing Screen", indent=1, checked = _internal.meetingState.sharing, fn=function() WatchForMeeting:fake(_mic_open, _video_on, not _sharing) end })
+
+
+      if(_mic_open or _video_on or _sharing) then
+         table.insert(meetingMenu, { title = "Clear", fn=function() WatchForMeeting:fake(false, false, false) end })
+      end
+      _internal.meetingMenuBar:setMenu(meetingMenu)
    
       _internal.zoomWindowFilter:pause()
    
       if(_internal.server and _internal.websocketStatus == "open") then _internal.server:send(composeJsonUpdate({mic_open = true, video_on = true, sharing = true})) end
-      _internal.updateMenuIcon(true)
+      _internal.updateMenuIcon(_internal.meetingState, _internal.faking)
    end
  
    return self
