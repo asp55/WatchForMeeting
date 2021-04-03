@@ -37,6 +37,121 @@ In that case, before `spoon.WatchForMeeting:start()` add the following to your `
 
 ```
 spoon.WatchForMeeting.sharing.useServer = true
-spoon.WatchForMeeting.sharing.serverURL="[YOUR URL SERVER URL]"
+spoon.WatchForMeeting.sharing.serverURL="[YOUR SERVER URL]"
 spoon.WatchForMeeting.sharing.key="[YOUR KEY]"
 ```
+
+or 
+
+```
+spoon.WatchForMeeting.sharing = {
+  useServer = true,
+  serverURL = "[YOUR SERVER URL]",
+  key="[YOUR KEY]"
+}
+```
+
+## Disable Sharing
+If you don't want to broadcast your status to a webpage, simply disable sharing
+```
+  spoon.WatchForMeeting.sharing.enabled = false
+```
+or
+```
+  spoon.WatchForMeeting.sharing = {
+    enabled = false
+  }
+```
+
+# Menubar
+
+<table>
+  <thead>
+  <tr>
+  <th rowspan="3">
+    Configuration&#8594;<br/><br/>
+    State&#8595;
+  </th>
+  <th colspan="4"><code>WatchForMeeting.menuBar={...
+  }</code></th>
+  </tr>
+  <tr>
+  <th><code>color = true,<br/>detailed = true,</code></th>
+  <th><code>color = true,<br/>detailed = false,</code></th>
+  <th><code>color = false,<br/>detailed = true,</code></th>
+  <th><code>color = false,<br/>detailed = false,</code></th>
+  </tr>
+  <tr>
+  <th colspan="4"><code>WatchForMeeting.menuBar.showFullState = true</code> or <code>WatchForMeeting.menuBar.showFullState = false</code></th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Available</td>
+      <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Detailed/Free.png" alt="Free slash Available" height="16" /></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Minimal/Free.png" alt="Free slash Available" height="16" /></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Detailed/Free.png" alt="Free slash Available" height="16" /></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Minimal/Free.png" alt="Free slash Available" height="16" /></td>
+    </tr>
+    <tr>
+      <td>Busy</td>
+      <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Detailed/Meeting.png" alt="In meeting, no additional status" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Minimal/Meeting.png" alt="In meeting, no additional status" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Detailed/Meeting.png" alt="In meeting, no additional status" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Minimal/Meeting.png" alt="In meeting, no additional status" height="16"></td>
+    </tr>
+  <tr>
+  <td></td>
+  <th colspan="4"><code>WatchForMeeting.menuBar.showFullState = true</code> only</th>
+  </tr>
+    <tr>
+      <td>Busy + Mic On</td>
+      <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Detailed/Meeting-Mic.png" alt="In meeting, mic:on, video:off, screensharing:off" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Minimal/Meeting-Mic.png" alt="In meeting, mic:on, video:off, screensharing:off" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Detailed/Meeting-Mic.png" alt="In meeting, mic:on, video:off, screensharing:off" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Minimal/Meeting-Mic.png" alt="In meeting, mic:on, video:off, screensharing:off" height="16"></td>
+    </tr>
+    <tr>
+      <td>Busy + Video On</td>
+    <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Detailed/Meeting-Vid.png" alt="In meeting, mic:off, video:on, screensharing:off" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Minimal/Meeting-Vid.png" alt="In meeting, mic:off, video:on, screensharing:off" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Detailed/Meeting-Vid.png" alt="In meeting, mic:off, video:on, screensharing:off" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Minimal/Meeting-Vid.png" alt="In meeting, mic:off, video:on, screensharing:off" height="16"></td>
+    </tr>
+    <tr>
+      <td>Busy + Screen Sharing</td>
+      <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Detailed/Meeting-Screen.png" alt="In meeting, mic:off, video:off, screensharing:on" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Minimal/Meeting-Screen.png" alt="In meeting, mic:off, video:off, screensharing:on" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Detailed/Meeting-Screen.png" alt="In meeting, mic:off, video:off, screensharing:on" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Minimal/Meeting-Screen.png" alt="In meeting, mic:off, video:off, screensharing:on" height="16"></td>
+    </tr>
+    <tr>
+      <td>Busy + Mic On + Video On</td>
+      <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Detailed/Meeting-Mic-Vid.png" alt="In meeting, mic:on, video:on, screensharing:off" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Minimal/Meeting-Mic-Vid.png" alt="In meeting, mic:on, video:on, screensharing:off" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Detailed/Meeting-Mic-Vid.png" alt="In meeting, mic:on, video:on, screensharing:off" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Minimal/Meeting-Mic-Vid.png" alt="In meeting, mic:on, video:on, screensharing:off" height="16"></td>
+    </tr>
+    <tr>
+      <td>Busy + Mic On + Screen Sharing</td>
+      <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Detailed/Meeting-Mic-Screen.png" alt="In meeting, mic:on, video:off, screensharing:on" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Minimal/Meeting-Mic-Screen.png" alt="In meeting, mic:on, video:off, screensharing:on" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Detailed/Meeting-Mic-Screen.png" alt="In meeting, mic:on, video:off, screensharing:on" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Minimal/Meeting-Mic-Screen.png" alt="In meeting, mic:on, video:off, screensharing:on" height="16"></td>
+    </tr>
+    <tr>
+      <td>Busy + Video On + Screen Sharing</td>
+      <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Detailed/Meeting-Vid-Screen.png" alt="In meeting, mic:off, video:on, screensharing:on" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Minimal/Meeting-Vid-Screen.png" alt="In meeting, mic:off, video:on, screensharing:on" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Detailed/Meeting-Vid-Screen.png" alt="In meeting, mic:off, video:on, screensharing:on" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Minimal/Meeting-Vid-Screen.png" alt="In meeting, mic:off, video:on, screensharing:on" height="16"></td>
+    </tr>
+    <tr>
+      <td>Busy + Mic On + Video On + Screen Sharing</td>
+      <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Detailed/Meeting-Mic-Vid-Screen.png" alt="In meeting, mic:on, video:on, screensharing:on" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Minimal/Meeting-Mic-Vid-Screen.png" alt="In meeting, mic:on, video:on, screensharing:on" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Detailed/Meeting-Mic-Vid-Screen.png" alt="In meeting, mic:on, video:on, screensharing:on" height="16"></td>
+<td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Minimal/Meeting-Mic-Vid-Screen.png" alt="In meeting, mic:on, video:on, screensharing:on" height="16"></td>
+    </tr>
+  </tbody>
+</table>
