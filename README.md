@@ -75,10 +75,10 @@ or
   }</code></th>
   </tr>
   <tr>
-  <th><code>color = true,<br/>detailed = true,</code></th>
-  <th><code>color = true,<br/>detailed = false,</code></th>
-  <th><code>color = false,<br/>detailed = true,</code></th>
-  <th><code>color = false,<br/>detailed = false,</code></th>
+  <th><code>color = true,</code><br/><code>detailed = true,</code></th>
+  <th><code>color = true,</code><br/><code>detailed = false,</code></th>
+  <th><code>color = false,</code><br/><code>detailed = true,</code></th>
+  <th><code>color = false,</code><br/><code>detailed = false,</code></th>
   </tr>
   <tr>
   <th colspan="4"><code>WatchForMeeting.menuBar.showFullState = true</code> or <code>WatchForMeeting.menuBar.showFullState = false</code></th>
