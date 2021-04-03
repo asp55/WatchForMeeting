@@ -63,8 +63,7 @@ or
   }
 ```
 
-# Menubar
-
+# Menubar Icons
 <table>
   <thead>
   <tr>
