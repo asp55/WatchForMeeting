@@ -291,18 +291,22 @@ local watchMeeting = hs.timer.new(0.5, function()
 end)
 
 startStopWatchMeeting = function()
-   if(_internal.meetingState == false and currentlyInMeeting() == true) then
-      _internal.updateMenuIcon(_internal.meetingState, _internal.faking)
-      WatchForMeeting.logger.d("Start Meeting")
-         _internal.meetingState = {}
-         watchMeeting:start()
-         watchMeeting:fire()
-   elseif(_internal.meetingState and currentlyInMeeting() == false) then
-      _internal.updateMenuIcon(false)
-      WatchForMeeting.logger.d("End Meeting")
+   if(not _internal.faking) then
+      if(_internal.meetingState == false and currentlyInMeeting() == true) then
+         _internal.updateMenuIcon(_internal.meetingState, _internal.faking)
+         WatchForMeeting.logger.d("Start Meeting")
+            _internal.meetingState = {}
+            watchMeeting:start()
+            watchMeeting:fire()
+      elseif(_internal.meetingState and currentlyInMeeting() == false) then
+         _internal.updateMenuIcon(false)
+         WatchForMeeting.logger.d("End Meeting")
+         watchMeeting:stop()
+         _internal.meetingState = false
+         if(_internal.server and _internal.websocketStatus == "open") then _internal.server:send(composeJsonUpdate(_internal.meetingState)) end
+      end
+   else
       watchMeeting:stop()
-      _internal.meetingState = false
-      if(_internal.server and _internal.websocketStatus == "open") then _internal.server:send(composeJsonUpdate(_internal.meetingState)) end
    end
 end
 
@@ -515,6 +519,9 @@ function WatchForMeeting:auto()
 
    if(_internal.running) then
       _internal.faking = false
+      _internal.meetingState = false
+      startStopWatchMeeting()
+      
       _internal.meetingMenuBar:setMenu({
          { title = "Meeting Status:", disabled = true },
          { title = "Automatic", checked = true  },
@@ -522,10 +529,8 @@ function WatchForMeeting:auto()
       })
    
    
-      --Check if a zoom meeting is already in progress
-      _internal.zoom = hs.application.find("zoom.us")
-      watchMeeting:fire()
-      _internal.updateMenuIcon(currentlyInMeeting())
+      --Update everything
+      _internal.updateMenuIcon(_internal.meetingState, _internal.faking)
       if(_internal.server and _internal.websocketStatus == "open") then _internal.server:send(composeJsonUpdate(_internal.meetingState)) end
    
       --turn on the zoom window monitor
@@ -552,6 +557,7 @@ function WatchForMeeting:fake(_mic_open, _video_on, _sharing)
    if(_internal.running) then
       _internal.faking = true
       _internal.meetingState = {mic_open = _mic_open, video_on = _video_on, sharing = _sharing}
+      startStopWatchMeeting()
 
       local meetingMenu = {
          { title = "Meeting Status:", disabled = true },
@@ -577,7 +583,7 @@ function WatchForMeeting:fake(_mic_open, _video_on, _sharing)
    
       _internal.zoomWindowFilter:pause()
    
-      if(_internal.server and _internal.websocketStatus == "open") then _internal.server:send(composeJsonUpdate({mic_open = true, video_on = true, sharing = true})) end
+      if(_internal.server and _internal.websocketStatus == "open") then _internal.server:send(composeJsonUpdate(_internal.meetingState)) end
       _internal.updateMenuIcon(_internal.meetingState, _internal.faking)
    end
  
