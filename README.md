@@ -71,8 +71,7 @@ or
     Configuration&#8594;<br/><br/>
     State&#8595;
   </th>
-  <th colspan="4"><code>WatchForMeeting.menuBar={...
-  }</code></th>
+  <th colspan="4"><code>WatchForMeeting.menuBar={...}</code></th>
   </tr>
   <tr>
   <th><code>color=true,</code><br/><code>detailed=true,</code></th>
