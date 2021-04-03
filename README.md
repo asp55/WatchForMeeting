@@ -80,7 +80,7 @@ or
   <th><code>color=false,</code><br/><code>detailed=false,</code></th>
   </tr>
   <tr>
-  <th colspan="4"><code>WatchForMeeting.menuBar.showFullState=true</code> or <code>WatchForMeeting.menuBar.showFullState=false</code></th>
+  <th colspan="4"><code>showFullState=true</code> or <code>showFullState=false</code></th>
   </tr>
   </thead>
   <tbody>
@@ -100,7 +100,7 @@ or
     </tr>
   <tr>
   <td></td>
-  <th colspan="4"><code>WatchForMeeting.menuBar.showFullState=true</code> only</th>
+  <th colspan="4"><code>showFullState=true</code> only</th>
   </tr>
     <tr>
       <td>Busy + Mic On</td>
