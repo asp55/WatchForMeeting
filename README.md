@@ -10,7 +10,7 @@ Watches to see if:
 And then lets you share that information.
 
 # Installation & Basic Usage
-Copy this directory as `WatchForMeeting.spoon` to `~/.hammerspoon/Spoons/`
+Download the [Latest Release](https://github.com/asp55/WatchForMeeting/releases/latest) and unzip to `~/.hammerspoon/Spoons/`
 
 To get going right out of the box, in your `~/.hammerspoon/init.lua` add these lines:
 ```
