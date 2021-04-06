@@ -1,6 +1,26 @@
 --- === WatchForMeeting ===
 ---
---- A module that monitors whether or not you are in a meeting and optionally shares that information on a webpage you can run elsewhere.
+--- A Spoon to answer the question
+--- > Are you in a meeting?
+--- 
+--- Watches to see if:
+--- 1) Zoom is running
+--- 2) Are you on a call
+--- 3) Are you on mute, is your camera on, and/or are you screen sharing
+--- 
+--- And then lets you share that information.
+--- 
+--- # Installation & Basic Usage
+--- Download the [Latest Release](https://github.com/asp55/WatchForMeeting/releases/latest) and unzip to `~/.hammerspoon/Spoons/`
+--- 
+--- To get going right out of the box, in your `~/.hammerspoon/init.lua` add these lines:
+--- ```
+--- hs.loadSpoon("WatchForMeeting")
+--- spoon.WatchForMeeting:start()
+--- ```
+--- 
+--- This will start the spoon monitoring for zoom calls, and come with the default status page, and menubar configurations.
+--- 
 
 
 --We'll store some stuff in an internal table
@@ -15,7 +35,7 @@ WatchForMeeting.__index = WatchForMeeting
 
 -- Metadata
 WatchForMeeting.name = "WatchForMeeting"
-WatchForMeeting.version = "1.0"
+WatchForMeeting.version = "1.0.0"
 WatchForMeeting.author = "Andrew Parnell <aparnell@gmail.com>"
 WatchForMeeting.homepage = "https://github.com/asp55/WatchForMeeting"
 WatchForMeeting.license = "MIT - https://opensource.org/licenses/MIT"
@@ -29,7 +49,7 @@ WatchForMeeting.license = "MIT - https://opensource.org/licenses/MIT"
 
 --- WatchForMeeting.logger
 --- Variable
---- Logger object used within the Spoon. Can be accessed to set the default log level for the messages coming from the Spoon.
+--- hs.logger object used within the Spoon. Can be accessed to set the default log level for the messages coming from the Spoon.
 WatchForMeeting.logger = hs.logger.new('WatchMeeting')
 
 
@@ -46,24 +66,56 @@ _internal.running = false
    --- Variable
    --- A Table containing the settings that control sharing.
    ---
-   --- - enabled
-   --- -- Whether or not sharing is enabled. True by default. When disabled, the spoon will still monitor meeting status, but you will need to write your own automations for what to do with that info. 
-   --- - useServer
-   --- -- *true* - (recommended) an external server will store the meeting status and provide the web interface for monitoring meeting status. (Node.js sample server can be found at [https://github.com/asp55/MeetingStatusServer](https://github.com/asp55/MeetingStatusServer))
-   --- -- *false* - hammerspoon will self serve the monitoring page. (Due to a limitation in hs.httpserver:websocket the monitoring page will only update in the last client to connect.) 
-   --- - port
-   --- -- What port to run the self hosted server when WatchForMeeting.sharing.useServer is false. (Defaults to 8080)
-   --- -- Ignored if WatchForMeeting.sharing.useServer is true.
-   --- - serverURL
-   --- -- The complete url for the external server. (including port)
-   --- -- Required when WatchForMeeting.sharing.useServer is *true*
-   --- - key
-   --- -- UUID to identify the room. Value is provided when the room is added on the server side. 
-   --- -- Required when WatchForMeeting.sharing.useServer is *true*
-   --- - maxConnectionAttempts
-   --- -- Maximum number of connection attempts when using an external server.
-   --- - waitBeforeRetry
-   --- -- Time, in seconds, between connection attempts when using an external server
+   --- | Key | Description | Default |
+   --- | --- | ----------- | ------- |
+   --- | enabled | Whether or not sharing is enabled.<br/><br/>When false, the spoon will still monitor meeting status to [meetingState](#meetingState), but you will need to write your own automations for what to do with that info. | _true_ |
+   --- | useServer | Do you want to use an external server? (See *Configuration Options* below) | _false_ |
+   --- | | ↓ _required info when `useServer=false`_ | |
+   --- | port | What port to run the self hosted server when WatchForMeeting.sharing.useServer is false. | _8080_ |
+   --- | | ↓ _required info when `useServer=true`_ | |
+   --- | serverURL | The complete url for the external server, including port. IE: `http://localhost:8080` | _nil_ |
+   --- | key | UUID to identify the room. Value is provided when the room is added on the server side. | _nil_ |
+   --- | maxConnectionAttempts | Maximum number of connection attempts when using an external server. When less than 0, infinite retrys | _-1_ |
+   --- | waitBeforeRetry | Time, in seconds, between connection attempts when using an external server | _5_ |
+   ---
+   --- # Configuration Options
+   --- ## Default
+   --- In order to minimize dependencies, by default this spoon uses a [hs.httpserver](https://www.hammerspoon.org/docs/hs.httpserver.html) to host the status page. This comes with a significant downside of: only the last client to load the page will receive status updates. Any previously connected clients will remain stuck at the last update they received before that client connected.
+   --- 
+   --- Once you are running the spoon, assuming you haven't changed the port (and nothing else is running at that location) you can reach your status page at http://localhost:8080
+   --- 
+   --- ## Better - MeetingStatusServer
+   --- For a better experience I recommend utilizing an external server to receive updates via websockets, and broadcast them to as many clients as you wish to connect.
+   --- 
+   --- For that purpose I've built [http://github.com/asp55/MeetingStatusServer](http://github.com/asp55/MeetingStatusServer) which runs on node.js and can either be run locally as its own thing, or hosted remotely.
+   --- 
+   --- If using the external server, you will to create a key to identify your "room" and then provide that information to the spoon. 
+   --- In that case, before `spoon.WatchForMeeting:start()` add the following to your `~/.hammerspoon/init.lua`
+   --- 
+   --- ```
+   --- spoon.WatchForMeeting.sharing.useServer = true
+   --- spoon.WatchForMeeting.sharing.serverURL="[YOUR SERVER URL]"
+   --- spoon.WatchForMeeting.sharing.key="[YOUR KEY]"
+   --- ```
+   --- 
+   --- or 
+   --- 
+   --- ```
+   --- spoon.WatchForMeeting.sharing = {
+   ---   useServer = true,
+   ---   serverURL = "[YOUR SERVER URL]",
+   ---   key="[YOUR KEY]"
+   --- }
+   --- ```
+   --- 
+   --- ## Disable
+   --- If you don't want to broadcast your status to a webpage, simply disable sharing
+   --- ```
+   ---   spoon.WatchForMeeting.sharing = {
+   ---     enabled = false
+   ---   }
+   --- ```
+   --- 
 
    _internal.sharingDefaults = {
       enabled = true, 
@@ -79,19 +131,105 @@ _internal.running = false
 
    --- WatchForMeeting.menubar
    --- Variable
-   --- Boolean whether or not to show the menubar item
    --- A Table containing the settings that control sharing.
    ---
-   --- - enabled
-   --- -- Whether or not to show the menu bar. True by default. 
-   --- - color
-   --- -- Whether or not to use color icons. True by default.
-   --- - detailed
-   --- -- Whether or not to use the detailed icon set. True by default.
-   --- -- *true* - Menu icon will spell out "Free" vs "Meeting" and will be sized accordingly
-   --- -- *false* - Menu icon will remain a fixed size
-   --- - showFullState
-   --- -- Whether the menubar icon should represent the full state (Mic On/Off, Video On/Off, Screen Sharing) or just whether or not you're currently in a meeting. True by default.
+   --- | Key | Description | Default | 
+   --- | --- | ----------- | ------- | 
+   --- | enabled | Whether or not to show the menu bar. | _true_ | 
+   --- | color | Whether or not to use color icons. | _true_ |
+   --- | detailed | Whether or not to use the detailed icon set. | _true_ |
+   --- | showFullState | Whether the menubar icon should represent the full state<br/>(IE: Mic On/Off, Video On/Off, & Screen Sharing) | _true_ |
+   --- 
+   --- 
+   --- ## Icons
+   --- 
+   --- <table>
+   ---   <thead>
+   ---   <tr>
+   ---   <th>
+   ---     <code>WatchForMeeting.menuBar = {...}</code> &#8594;
+   ---   </th>
+   ---   <th><code>color=true,</code><br/><code>detailed=true,</code></th>
+   ---   <th><code>color=true,</code><br/><code>detailed=false,</code></th>
+   ---   <th><code>color=false,</code><br/><code>detailed=true,</code></th>
+   ---   <th><code>color=false,</code><br/><code>detailed=false,</code></th>
+   ---   </tr>
+   ---   <tr>
+   ---   <th>State (See: <a href="#meetingState">WatchForMeeting.meetingState</a>) &#8595;
+   ---   </th>
+   ---   <th colspan="4"><code>showFullState=true</code> or <code>showFullState=false</code></th>
+   ---   </tr>
+   ---   </thead>
+   ---   <tbody>
+   ---     <tr>
+   ---       <td>Available</td>
+   ---       <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Detailed/Free.png" alt="Free slash Available" height="16" /></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Minimal/Free.png" alt="Free slash Available" height="16" /></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Detailed/Free.png" alt="Free slash Available" height="16" /></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Minimal/Free.png" alt="Free slash Available" height="16" /></td>
+   ---     </tr>
+   ---     <tr>
+   ---       <td>Busy</td>
+   ---       <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Detailed/Meeting.png" alt="In meeting, no additional status" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Minimal/Meeting.png" alt="In meeting, no additional status" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Detailed/Meeting.png" alt="In meeting, no additional status" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Minimal/Meeting.png" alt="In meeting, no additional status" height="16"></td>
+   ---     </tr>
+   ---   <tr>
+   ---   <td></td>
+   ---   <th colspan="4"><code>showFullState=true</code> only</th>
+   ---   </tr>
+   ---     <tr>
+   ---       <td>Busy + Mic On</td>
+   ---       <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Detailed/Meeting-Mic.png" alt="In meeting, mic:on, video:off, screensharing:off" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Minimal/Meeting-Mic.png" alt="In meeting, mic:on, video:off, screensharing:off" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Detailed/Meeting-Mic.png" alt="In meeting, mic:on, video:off, screensharing:off" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Minimal/Meeting-Mic.png" alt="In meeting, mic:on, video:off, screensharing:off" height="16"></td>
+   ---     </tr>
+   ---     <tr>
+   ---       <td>Busy + Video On</td>
+   ---     <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Detailed/Meeting-Vid.png" alt="In meeting, mic:off, video:on, screensharing:off" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Minimal/Meeting-Vid.png" alt="In meeting, mic:off, video:on, screensharing:off" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Detailed/Meeting-Vid.png" alt="In meeting, mic:off, video:on, screensharing:off" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Minimal/Meeting-Vid.png" alt="In meeting, mic:off, video:on, screensharing:off" height="16"></td>
+   ---     </tr>
+   ---     <tr>
+   ---       <td>Busy + Screen Sharing</td>
+   ---       <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Detailed/Meeting-Screen.png" alt="In meeting, mic:off, video:off, screensharing:on" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Minimal/Meeting-Screen.png" alt="In meeting, mic:off, video:off, screensharing:on" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Detailed/Meeting-Screen.png" alt="In meeting, mic:off, video:off, screensharing:on" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Minimal/Meeting-Screen.png" alt="In meeting, mic:off, video:off, screensharing:on" height="16"></td>
+   ---     </tr>
+   ---     <tr>
+   ---       <td>Busy + Mic On + Video On</td>
+   ---       <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Detailed/Meeting-Mic-Vid.png" alt="In meeting, mic:on, video:on, screensharing:off" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Minimal/Meeting-Mic-Vid.png" alt="In meeting, mic:on, video:on, screensharing:off" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Detailed/Meeting-Mic-Vid.png" alt="In meeting, mic:on, video:on, screensharing:off" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Minimal/Meeting-Mic-Vid.png" alt="In meeting, mic:on, video:on, screensharing:off" height="16"></td>
+   ---     </tr>
+   ---     <tr>
+   ---       <td>Busy + Mic On + Screen Sharing</td>
+   ---       <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Detailed/Meeting-Mic-Screen.png" alt="In meeting, mic:on, video:off, screensharing:on" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Minimal/Meeting-Mic-Screen.png" alt="In meeting, mic:on, video:off, screensharing:on" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Detailed/Meeting-Mic-Screen.png" alt="In meeting, mic:on, video:off, screensharing:on" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Minimal/Meeting-Mic-Screen.png" alt="In meeting, mic:on, video:off, screensharing:on" height="16"></td>
+   ---     </tr>
+   ---     <tr>
+   ---       <td>Busy + Video On + Screen Sharing</td>
+   ---       <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Detailed/Meeting-Vid-Screen.png" alt="In meeting, mic:off, video:on, screensharing:on" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Minimal/Meeting-Vid-Screen.png" alt="In meeting, mic:off, video:on, screensharing:on" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Detailed/Meeting-Vid-Screen.png" alt="In meeting, mic:off, video:on, screensharing:on" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Minimal/Meeting-Vid-Screen.png" alt="In meeting, mic:off, video:on, screensharing:on" height="16"></td>
+   ---     </tr>
+   ---     <tr>
+   ---       <td>Busy + Mic On + Video On + Screen Sharing</td>
+   ---       <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Detailed/Meeting-Mic-Vid-Screen.png" alt="In meeting, mic:on, video:on, screensharing:on" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Color/Minimal/Meeting-Mic-Vid-Screen.png" alt="In meeting, mic:on, video:on, screensharing:on" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Detailed/Meeting-Mic-Vid-Screen.png" alt="In meeting, mic:on, video:on, screensharing:on" height="16"></td>
+   --- <td><img src="https://raw.githubusercontent.com/asp55/WatchForMeeting/main/menubar-icons/Template/Minimal/Meeting-Mic-Vid-Screen.png" alt="In meeting, mic:on, video:on, screensharing:on" height="16"></td>
+   ---     </tr>
+   ---   </tbody>
+   --- </table>
 
 
    _internal.menubarDefaults = {
@@ -134,10 +272,10 @@ _internal.running = false
    --- Variable
    --- (Read-only) Either false (when not in a meeting) or a table (when in a meeting)
    ---
-   --- When in a meeting, table will have the following keys with boolean values:
-   --- - mic_open 
-   --- - video_on 
-   --- - sharing 
+   --- | Value                                                                   | Description  |
+   --- | ----------------------------------------------------------------------- | -----------  |
+   --- | `false`                                                                 | Available    | 
+   --- | `{mic_open = [Boolean],  video_on = [Boolean], sharing = [Boolean] }`   | Busy         |
    _internal.meetingState = false
 
 
@@ -190,7 +328,7 @@ _internal.meetingMenuBar = hs.menubar.new(false)
 
 function _internal.updateMenuIcon(status, faking)
 
-   local iconPath = hs.spoons.scriptPath()..'menubar-icons/'
+   local iconPath = 'menubar-icons/'
 
    if(_internal.menubar.color) then
       iconPath = iconPath..'Color/'
@@ -218,7 +356,7 @@ function _internal.updateMenuIcon(status, faking)
       iconFile = "Free.pdf"
    end
 
-   _internal.meetingMenuBar:setIcon(iconPath..iconFile,not _internal.menubar.color)
+   _internal.meetingMenuBar:setIcon(hs.spoons.resourcePath(iconPath..iconFile),not _internal.menubar.color)
 end
 
 -------------------------------------------
