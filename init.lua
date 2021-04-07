@@ -327,36 +327,37 @@ _internal.meetingMenuBar = hs.menubar.new(false)
 
 
 function _internal.updateMenuIcon(status, faking)
+   if(_internal.menubar.enabled) then 
+      local iconPath = 'menubar-icons/'
 
-   local iconPath = 'menubar-icons/'
-
-   if(_internal.menubar.color) then
-      iconPath = iconPath..'Color/'
-   else
-      iconPath = iconPath..'Template/'
-   end
-
-   if(_internal.menubar.detailed) then
-      iconPath = iconPath..'Detailed/'
-   else
-      iconPath = iconPath..'Minimal/'
-   end
-   
-   local iconFile = ""
-   if(status) then 
-      iconFile = "Meeting"
-      if(_internal.menubar.showFullState and (status.mic_open or status.video_on or status.sharing)) then
-         if(status.mic_open) then iconFile = iconFile.."-Mic" end
-         if(status.video_on) then iconFile = iconFile.."-Vid" end
-         if(status.sharing) then iconFile = iconFile.."-Screen" end
+      if(_internal.menubar.color) then
+         iconPath = iconPath..'Color/'
+      else
+         iconPath = iconPath..'Template/'
       end
-      if(faking) then iconFile = iconFile.."-Faking" end
-      iconFile = iconFile..".pdf"
-   else
-      iconFile = "Free.pdf"
-   end
 
-   _internal.meetingMenuBar:setIcon(hs.spoons.resourcePath(iconPath..iconFile),not _internal.menubar.color)
+      if(_internal.menubar.detailed) then
+         iconPath = iconPath..'Detailed/'
+      else
+         iconPath = iconPath..'Minimal/'
+      end
+      
+      local iconFile = ""
+      if(status) then 
+         iconFile = "Meeting"
+         if(_internal.menubar.showFullState and (status.mic_open or status.video_on or status.sharing)) then
+            if(status.mic_open) then iconFile = iconFile.."-Mic" end
+            if(status.video_on) then iconFile = iconFile.."-Vid" end
+            if(status.sharing) then iconFile = iconFile.."-Screen" end
+         end
+         if(faking) then iconFile = iconFile.."-Faking" end
+         iconFile = iconFile..".pdf"
+      else
+         iconFile = "Free.pdf"
+      end
+
+      _internal.meetingMenuBar:setIcon(hs.spoons.resourcePath(iconPath..iconFile),not _internal.menubar.color)
+   end
 end
 
 -------------------------------------------
@@ -579,15 +580,15 @@ end
 -------------------------------------------
 
 
---- WatchForMeeting:start()
+--- WatchForMeeting:start() -> WatchForMeeting
 --- Method
 --- Starts a WatchForMeeting object
 ---
 --- Parameters:
---- - None
+---  * None
 ---
 --- Returns:
---- - The WatchForMeeting object
+---  * The spoon.WatchForMeeting object
 function WatchForMeeting:start()
    if(not _internal.running) then
       _internal.running = true
@@ -614,10 +615,10 @@ end
 --- Stops a WatchForMeeting object
 ---
 --- Parameters:
---- - None
+---  * None
 ---
 --- Returns:
---- - The WatchForMeeting object
+---  * The spoon.WatchForMeeting object
 function WatchForMeeting:stop()
    _internal.running = false
    stopConnection()
@@ -632,10 +633,10 @@ end
 --- Restarts a WatchForMeeting object
 ---
 --- Parameters:
---- - None
+---  * None
 ---
 --- Returns:
---- - The WatchForMeeting object
+---  * The spoon.WatchForMeeting object
 function WatchForMeeting:restart()
    self:stop()
    return self:start()
@@ -648,10 +649,10 @@ end
 --- Monitors Zoom and updates status accordingly
 ---
 --- Parameters:
---- - None
+---  * None
 ---
 --- Returns:
---- - The WatchForMeeting object
+---  * The spoon.WatchForMeeting object
 function WatchForMeeting:auto()
    _internal.mode = 0
 
@@ -679,16 +680,18 @@ function WatchForMeeting:auto()
 end
  
 
---- WatchForMeeting:fake()
+--- WatchForMeeting:fake(mic_open, video_on, sharing)
 --- Method
 --- Disables monitoring and reports as being in a meeting. 
 --- Useful when meeting type is not supported (currently any platform that isn't zoom.)
 ---
 --- Parameters:
---- - None
+---  * mic_open - A boolean indicating if the mic is open
+---  * video_on - A boolean indicating if the video camera is on
+---  * sharing - A boolean indicating if screen sharing is on
 ---
 --- Returns:
---- - The WatchForMeeting object
+---  * The spoon.WatchForMeeting object
 function WatchForMeeting:fake(_mic_open, _video_on, _sharing)
    _internal.mode = 1
  
