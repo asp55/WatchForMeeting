@@ -583,10 +583,8 @@ end
 --- WatchForMeeting:start() -> WatchForMeeting
 --- Method
 --- Starts a WatchForMeeting object
----
 --- Parameters:
 ---  * None
----
 --- Returns:
 ---  * The spoon.WatchForMeeting object
 function WatchForMeeting:start()
@@ -613,10 +611,8 @@ end
 --- WatchForMeeting:stop()
 --- Method
 --- Stops a WatchForMeeting object
----
 --- Parameters:
 ---  * None
----
 --- Returns:
 ---  * The spoon.WatchForMeeting object
 function WatchForMeeting:stop()
@@ -631,10 +627,8 @@ end
 --- WatchForMeeting:start()
 --- Method
 --- Restarts a WatchForMeeting object
----
 --- Parameters:
 ---  * None
----
 --- Returns:
 ---  * The spoon.WatchForMeeting object
 function WatchForMeeting:restart()
@@ -647,10 +641,8 @@ end
 --- WatchForMeeting:auto()
 --- Method
 --- Monitors Zoom and updates status accordingly
----
 --- Parameters:
 ---  * None
----
 --- Returns:
 ---  * The spoon.WatchForMeeting object
 function WatchForMeeting:auto()
@@ -684,12 +676,10 @@ end
 --- Method
 --- Disables monitoring and reports as being in a meeting. 
 --- Useful when meeting type is not supported (currently any platform that isn't zoom.)
----
 --- Parameters:
 ---  * mic_open - A boolean indicating if the mic is open
 ---  * video_on - A boolean indicating if the video camera is on
 ---  * sharing - A boolean indicating if screen sharing is on
----
 --- Returns:
 ---  * The spoon.WatchForMeeting object
 function WatchForMeeting:fake(_mic_open, _video_on, _sharing)
